@@ -223,6 +223,49 @@
     .push:focus-visible { outline: 1px dotted var(--ink); outline-offset: -4px; }
     .push[disabled] { color: var(--shadow); text-shadow: 1px 1px 0 var(--light); }
 
+    /* --- screen saver mode --------------------------------------------
+       Full screen runs the saver over the whole page rather than in a new
+       tab, and any click or key stops it, which is what the thing it is
+       imitating did. */
+    .saver { position: fixed; inset: 0; z-index: 100; background: #000; cursor: none; }
+    .saver iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    /* A sheet over the iframe, because a click inside one never reaches us. */
+    .saver .catch { position: absolute; inset: 0; }
+    .saver .hint {
+      position: absolute; left: 0; right: 0; bottom: 9%;
+      text-align: center;
+      color: #fff;
+      text-shadow: 1px 1px 0 #000;
+      animation: dim 3.5s ease-in forwards;
+    }
+    @keyframes dim { 0%, 50% { opacity: .8; } 100% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .saver .hint { animation: none; opacity: .8; }
+    }
+
+    /* --- the embed dialog ---------------------------------------------- */
+    .modal { position: fixed; inset: 0; z-index: 90; background: rgba(0, 0, 0, .35); display: grid; place-items: center; padding: 12px; }
+    .dialog {
+      width: 100%; max-width: 540px;
+      background: var(--face);
+      padding: 3px;
+      box-shadow: 3px 3px 0 rgba(0, 0, 0, .35);
+    }
+    .dialog .body { padding: 12px; }
+    .dialog p { margin: 0 0 10px; }
+    .dialog .cap { margin-top: 10px; }
+    .dialog textarea {
+      width: 100%; height: 80px; resize: vertical; display: block;
+      background: var(--field); color: var(--ink);
+      font: 11px/1.45 ui-monospace, "Courier New", monospace;
+      border: 2px solid;
+      border-color: var(--shadow) var(--light) var(--light) var(--shadow);
+      padding: 4px;
+      white-space: pre;
+    }
+    .dialog .note { font-size: 11px; margin: 6px 0 0; }
+    .dialog .acts { display: flex; justify-content: flex-end; gap: 6px; margin-top: 6px; }
+
     .about {
       margin-top: 14px;
       padding-top: 12px;
@@ -319,7 +362,9 @@
         </div>
         <div class="buttons">
           <button class="push" id="full" disabled>Full screen</button>
+          <button class="push" id="newtab" disabled>New tab</button>
           <button class="push" id="again" disabled>Restart</button>
+          <button class="push" id="embed" disabled>Embed&hellip;</button>
           <button class="push" id="random">Random</button>
         </div>
       </div>
@@ -341,6 +386,9 @@
           nothing but CSS animations and transforms, no images and no JavaScript. They
           are other people&rsquo;s work, so they are tucked away behind the checkbox
           rather than mixed in.</p>
+        <p><b>Full screen</b> runs the saver over this page and stops on a click or a
+          key, the way the original did. <b>New tab</b> opens it on its own, and
+          <b>Embed&hellip;</b> gives you the markup to put it in a page of your own.</p>
       </div>
     </div>
 
@@ -360,12 +408,19 @@
   </div>
 
   <script>
+    /* `el`/`attrs` are only on the decoded ones: they are custom elements, so
+       they can be embedded as themselves rather than in an iframe. */
     var SAVERS = [
-      { name: 'Flying Toasters', file: 'all/toasters.html',         kind: 'ripped', tag: 'TOAST3.AD 1992' },
-      { name: 'Marbles',         file: 'all/marbles.html',         kind: 'ripped', tag: 'MARBLES2.AD 1992' },
-      { name: 'Aquatic Realm',   file: 'all/aqua.html',            kind: 'ripped', tag: 'Aqua.ad' },
-      { name: 'Flocks',          file: 'all/flocks.html',          kind: 'ripped', tag: 'FLOCKS.AD 1992' },
-      { name: 'Marbles',         file: 'all/marbles-40.html',      kind: 'ripped', tag: 'MARBLES.AD 4.0' },
+      { name: 'Flying Toasters', file: 'all/toasters.html',        kind: 'ripped', tag: 'TOAST3.AD 1992',
+        js: 'toasters', el: 'after-dark-toasters', attrs: 'art="all/art/toast3" objects="air wing"' },
+      { name: 'Marbles',         file: 'all/marbles.html',         kind: 'ripped', tag: 'MARBLES2.AD 1992',
+        js: 'marbles', el: 'after-dark-marbles', attrs: 'art="all/art/marbles2" pins="many" pin-size="medium" speed="medium"' },
+      { name: 'Aquatic Realm',   file: 'all/aqua.html',            kind: 'ripped', tag: 'Aqua.ad',
+        js: 'aqua', el: 'after-dark-aqua', attrs: 'art="all/art/aqua" creatures="14" seaweed="6"' },
+      { name: 'Flocks',          file: 'all/flocks.html',          kind: 'ripped', tag: 'FLOCKS.AD 1992',
+        js: 'flocks', el: 'after-dark-flocks', attrs: 'art="all/art/flocks" kind="birds" size="medium"' },
+      { name: 'Marbles',         file: 'all/marbles-40.html',      kind: 'ripped', tag: 'MARBLES.AD 4.0',
+        js: 'marbles-40', el: 'after-dark-marbles-40', attrs: 'art="all/art/marbles" count="a jar full"' },
       { name: 'Flying Toasters', file: 'all/flying-toasters.html', kind: 'css' },
       { name: 'Fish',            file: 'all/fish.html',            kind: 'css' },
       { name: 'Globe',           file: 'all/globe.html',           kind: 'css' },
@@ -384,7 +439,9 @@
     var glass = document.getElementById('screen');
     var off = document.getElementById('off');
     var full = document.getElementById('full');
+    var newtab = document.getElementById('newtab');
     var again = document.getElementById('again');
+    var embed = document.getElementById('embed');
     var showcss = document.getElementById('showcss');
     var shown = [];
     var current = null;
@@ -412,6 +469,10 @@
       });
     }
 
+    function setEnabled(on) {
+      [full, newtab, again, embed].forEach(function (b) { b.disabled = !on; });
+    }
+
     function select(i) {
       current = shown[i];
       Array.prototype.forEach.call(list.children, function (node, j) {
@@ -419,12 +480,7 @@
       });
       off.style.display = 'none';
       glass.src = current.file;
-      full.disabled = false;
-      again.disabled = false;
-    }
-
-    function openFull() {
-      if (current) { window.open(current.file, '_blank', 'noopener'); }
+      setEnabled(true);
     }
 
     function clearScreen() {
@@ -434,13 +490,184 @@
       Array.prototype.forEach.call(list.children, function (node) {
         node.setAttribute('aria-current', 'false');
       });
-      full.disabled = true;
-      again.disabled = true;
+      setEnabled(false);
     }
 
-    full.onclick = openFull;
-    document.getElementById('ok').onclick = openFull;
-    document.getElementById('apply').onclick = openFull;
+    /* ---------------------------------------------------- full screen ---
+       Runs over the top of this page rather than opening a tab, and any
+       click or key puts it away again. */
+
+    var saver = null;
+
+    /* Safari still wants the prefix. */
+    function fullscreenElement() {
+      return document.fullscreenElement || document.webkitFullscreenElement || null;
+    }
+    function fullscreenEvents(add) {
+      var how = add ? 'addEventListener' : 'removeEventListener';
+      document[how]('fullscreenchange', onFullscreenChange);
+      document[how]('webkitfullscreenchange', onFullscreenChange);
+    }
+
+    function stopSaver() {
+      if (!saver) { return; }
+      var box = saver;
+      saver = null;
+      box.removeEventListener('mousedown', stopSaver);
+      box.removeEventListener('touchstart', stopSaver);
+      document.removeEventListener('keydown', stopSaver);
+      fullscreenEvents(false);
+      if (fullscreenElement()) {
+        var exit = document.exitFullscreen || document.webkitExitFullscreen;
+        try { exit.call(document); } catch (e) {}
+      }
+      box.parentNode.removeChild(box);
+      full.focus();
+    }
+
+    /* Esc and F11 leave full screen without going through us. */
+    function onFullscreenChange() {
+      if (saver && !fullscreenElement()) { stopSaver(); }
+    }
+
+    function startSaver() {
+      if (!current || saver) { return; }
+      var box = el('div', 'saver');
+      var frame = document.createElement('iframe');
+      frame.src = current.file;
+      frame.title = current.name + ' screen saver';
+      frame.setAttribute('scrolling', 'no');
+      box.appendChild(frame);
+      box.appendChild(el('div', 'catch'));
+      box.appendChild(el('div', 'hint', 'Click anywhere, or press a key, to stop'));
+      document.body.appendChild(box);
+      saver = box;
+
+      box.addEventListener('mousedown', stopSaver);
+      box.addEventListener('touchstart', stopSaver);
+      document.addEventListener('keydown', stopSaver);
+      fullscreenEvents(true);
+      /* If the browser says no — iOS does — the overlay still covers the
+         window, which is close enough. */
+      var go = box.requestFullscreen || box.webkitRequestFullscreen;
+      if (go) {
+        try {
+          var p = go.call(box);
+          if (p && p.catch) { p.catch(function () {}); }
+        } catch (e) {}
+      }
+    }
+
+    function openTab() {
+      if (current) { window.open(current.file, '_blank', 'noopener'); }
+    }
+
+    /* -------------------------------------------------------- embedding -- */
+
+    /** Where this page is being served from, so the snippet is copy-pasteable. */
+    function absolute(file) {
+      if (location.protocol === 'http:' || location.protocol === 'https:') {
+        return new URL(file, location.href).href;
+      }
+      return 'https://vortitron.github.io/after-dark-css/' + file;
+    }
+
+    function snippets(s) {
+      var out = [{
+        cap: 'Anywhere, in an iframe',
+        code: '<iframe src="' + absolute(s.file) + '"\n' +
+              '        width="640" height="480" scrolling="no" style="border:0"\n' +
+              '        title="' + s.name + ' screen saver"></iframe>',
+        note: 'Works from any site. Nothing to install.'
+      }];
+      if (s.el) {
+        out.push({
+          cap: 'On your own site, as a custom element',
+          code: '<script src="all/ad.js"><\/script>\n' +
+                '<script src="all/modules/' + s.js + '.js"><\/script>\n' +
+                '<' + s.el + ' ' + s.attrs + '\n' +
+                '  style="display:block;width:640px;height:480px"></' + s.el + '>',
+          note: 'Needs ad.js, modules/' + s.js + '.js and all/art/ copied across, ' +
+                'and the page served over http — the artwork is fetched, so file:// will not do.'
+        });
+      }
+      return out;
+    }
+
+    var modal = null;
+
+    function closeEmbed() {
+      if (!modal) { return; }
+      document.removeEventListener('keydown', onModalKey);
+      modal.parentNode.removeChild(modal);
+      modal = null;
+      document.getElementById('embed').focus();
+    }
+
+    function onModalKey(e) {
+      if (e.key === 'Escape') { closeEmbed(); }
+    }
+
+    function copyButton(area) {
+      var b = el('button', 'push', 'Copy');
+      b.onclick = function () {
+        area.select();
+        var done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1200); };
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(area.value).then(done, function () {});
+        } else if (document.execCommand('copy')) {
+          done();
+        }
+      };
+      return b;
+    }
+
+    function openEmbed() {
+      if (!current || modal) { return; }
+      modal = el('div', 'modal');
+      var dialog = el('div', 'dialog');
+
+      var bar = el('div', 'titlebar');
+      bar.appendChild(el('span', 'grow', 'Embed — ' + current.name));
+      var x = el('span', 'btn out', '×');
+      x.onclick = closeEmbed;
+      bar.appendChild(x);
+      dialog.appendChild(bar);
+
+      var body = el('div', 'body');
+      body.appendChild(el('p', '', 'Drop either of these into a page. Both run entirely in the browser.'));
+      snippets(current).forEach(function (s) {
+        body.appendChild(el('span', 'cap', s.cap));
+        var area = document.createElement('textarea');
+        area.readOnly = true;
+        area.spellcheck = false;
+        area.value = s.code;
+        body.appendChild(area);
+        body.appendChild(el('p', 'note', s.note));
+        var acts = el('div', 'acts');
+        acts.appendChild(copyButton(area));
+        body.appendChild(acts);
+      });
+      dialog.appendChild(body);
+
+      var foot = el('div', 'footer');
+      var close = el('button', 'push', 'Close');
+      close.onclick = closeEmbed;
+      foot.appendChild(close);
+      dialog.appendChild(foot);
+
+      modal.appendChild(dialog);
+      modal.onmousedown = function (e) { if (e.target === modal) { closeEmbed(); } };
+      document.body.appendChild(modal);
+      document.addEventListener('keydown', onModalKey);
+      close.focus();
+    }
+
+    full.onclick = startSaver;
+    newtab.onclick = openTab;
+    embed.onclick = openEmbed;
+    document.getElementById('ok').onclick = startSaver;
+    document.getElementById('apply').onclick = startSaver;
     document.getElementById('cancel').onclick = clearScreen;
     document.getElementById('random').onclick = function () {
       select(Math.floor(Math.random() * shown.length));

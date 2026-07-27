@@ -51,6 +51,38 @@ new `MARBLES.AD` that just drifts big rendered marbles around. Both are here.
 
 The CSS screensavers are self-contained pages and open straight from disk. The decoded ones fetch their artwork, so they need serving over HTTP — `python3 -m http.server` from the repo root is enough.
 
+## Embedding one
+
+Every screensaver here is a page in its own right, so the way that works anywhere is an iframe:
+
+```html
+<iframe src="https://vortitron.github.io/after-dark-css/all/marbles.html"
+        width="640" height="480" scrolling="no" style="border:0"
+        title="Marbles screen saver"></iframe>
+```
+
+The decoded ones are also custom elements, so if you are hosting the files yourself you can drop one straight into a page and set it with the original module's own options:
+
+```html
+<script src="all/ad.js"></script>
+<script src="all/modules/marbles.js"></script>
+
+<after-dark-marbles art="all/art/marbles2" pins="many" pin-size="medium" speed="medium"
+  style="display:block;width:640px;height:480px"></after-dark-marbles>
+```
+
+`art` points at the folder `adweb.py`/`adclassic.py` wrote, and the element fills whatever box you give it. The rest are:
+
+| Element | Script | Options |
+| --- | --- | --- |
+| `<after-dark-toasters>` | `modules/toasters.js` | `objects` = squadron / air wing / swarm |
+| `<after-dark-marbles>` | `modules/marbles.js` | `pins` = none / few / many / lots, `pin-size` = x-small / medium / big, `speed` = slow / medium / fast |
+| `<after-dark-flocks>` | `modules/flocks.js` | `kind` = birds / polliwogs / gnats / paparazzi / atoms / copters / dots, `size` = small / medium / large |
+| `<after-dark-aqua>` | `modules/aqua.js` | `creatures` and `seaweed` are counts, `sea-floor` is a flag |
+| `<after-dark-marbles-40>` | `modules/marbles-40.js` | `count` = a few / a pouch full / a jar full / a box full, `pattern` |
+
+The option names are the module's own, read out of its `TYPE_1000` control-panel strings. The front page has an **Embed…** button that writes the snippet out for whichever saver is selected.
+
 ## Why?
 
 Just for fun.
