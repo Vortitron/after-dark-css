@@ -1,0 +1,1824 @@
+;;  PREVIOUS.INF - Information file for writing UNINSTALL.INF for previous products.
+
+[Overall]
+Packages=AD40,AD30_New,30French,30German,AD20,ADOL,Custom,Disney,Looney,Marvel,MAD,Myst,Simpsons, Starter,StarTrek,STMP,STTNG,Triazzle,Twisted,XMen,engine 
+
+SystemEditCount=1
+SystemEdit1=Y,Y,Y,WinIni,,Berkeley Systems,After Dark,Base
+
+FileCount=22
+;;
+;;  System file, delete shortcuts, file path
+;;
+File1=Y,N,Windows\ad_graph.txt
+File2=N,N,Base\Multi.am3
+File3=N,N,Base\Random.ar3
+File4=N,N,Base\admodule.as3
+File5=N,N,Base\ecologic.as3
+File6=N,N,Base\adwfont.fon
+File7=Y,N,Base\adw30.386
+File8=Y,N,Base\adwrap.drv
+File9=N,N,Base\adsetup.dll
+File10=N,N,Base\adnwpass.dll
+File11=N,N,Base\dunzip.dll
+File12=N,N,Base\*.adc
+File13=N,N,Base\resource.dll
+File14=N,N,Base\Multi\Multi.am3
+File15=N,N,Base\Multi\Clock_at.am3
+File16=N,N,Base\Multi\Make_sen.am3
+File17=N,N,Base\Multi\Mind_war.am3
+File18=N,N,Base\Multi\Apocalyp.am3
+File19=N,N,Base\Multi\Kiss_the.am3
+File20=N,N,Base\Random\Random.ar3
+File21=N,N,Base\Random\Random.amr
+File22=N,N,Base\bitmaps\panther.bmp
+;;
+;;  Shared folder, delete recursively, file path
+;;  Note: you cannot delete a shared folder recursively
+;;
+FolderCount=7
+Folder1=Y,N,Base
+Folder2=N,N,Base\Music
+Folder3=N,N,Base\Sounds
+Folder4=N,N,Base\Bitmaps
+Folder5=N,N,Base\After Dark
+Folder6=N,N,Base\Random
+Folder7=N,N,Base\Multi
+
+[engine]
+Name=After Dark Engine
+SystemEditCount=15
+SystemEdit1=N,N,Y,RegKey,,HKEY_CLASSES_ROOT\CLSID\{f19f4ae0-e38f-11ce-a86e-00a024079437},,
+SystemEdit2=N,N,Y,RegKey,,HKEY_CLASSES_ROOT\CLSID\{f19f4ae0-e38f-11ce-a86e-00a024079437}, @, After Dark Display Page
+SystemEdit3=Y,N,Y,RegKey,,HKEY_CLASSES_ROOT\CLSID\{f19f4ae0-e38f-11ce-a86e-00a024079437}\InProcServer32, @, Base\adpage.dll
+SystemEdit4=N,N,Y,RegKey,,HKEY_CLASSES_ROOT\CLSID\{f19f4ae0-e38f-11ce-a86e-00a024079437}\InProcServer32, ThreadingModel, Apartment
+SystemEdit5=N,N,Y,RegKey,,HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Controls Folder\Display\shellex\PropertySheetHandlers\After Dark Display Page,,
+SystemEdit6=N,N,Y,RegKey,,HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Controls Folder\Display\shellex\PropertySheetHandlers\After Dark Display Page, @, {f19f4ae0-e38f-11ce-a86e-00a024079437}
+SystemEdit7=N,N,Y,RegKey,,HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Approved, {f19f4ae0-e38f-11ce-a86e-00a024079437}, After Dark Display Page
+SystemEdit8=Y,Y,Y,SystemIni,,boot,SCRNSAVE.EXE,System\After Dark.scr
+SystemEdit9=Y,N,Y,RegKey,,HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run, After Dark QuickAccess, "Base\After Dark.exe" /taskbar
+SystemEdit10=N,N,Y,RegKey,,HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\After Dark,,,
+SystemEdit11=N,N,Y,RegKey,,HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\After Dark, DisplayName, After Dark
+SystemEdit12=Y,N,Y,RegKey,,HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\After Dark, UninstallString, Base\Uninstall.exe
+SystemEdit13=Y,Y,Y,RegKey,,HKEY_CURRENT_USER\SOFTWARE\Berkeley Systems\After Dark,,
+SystemEdit14=Y,Y,Y,RegKey,,HKEY_CURRENT_USER\SOFTWARE\Berkeley Systems\After Dark, ControlOnTaskbar, #1
+SystemEdit15=Y,Y,Y,RegKey,,HKEY_CURRENT_USER\SOFTWARE\Berkeley Systems\After Dark, SleepHotkey, #0x00000353
+FileCount=23
+File1=Y,N,Base\AD_snd.dll
+File2=Y,N,Windows\AD_snd.dll
+File3=N,N,Base\oldmod32.dll
+File4=Y,N,Base\adpage.dll
+File5=N,Y,Base\adpage.hlp
+File6=Y,N,Base\oldmod16.dll
+File7=N,N,Base\After Dark\Starry Night.ad
+File8=N,Y,System\After Dark.scr
+File9=Y,Y,Base\After Dark.exe
+File10=N,Y,Base\After Dark.ani
+File11=N,Y,Base\Adw40.hlp
+File12=Y,Y,Base\ad_rsrc.dll
+File13=Y,Y,Base\ad_mod.dll
+File14=Y,Y,Windows\ad_rsrc.dll
+File15=Y,Y,Windows\ad_mod.dll
+File16=Y,N,Base\ad30rsdb.dll
+File17=N,N,Windows\ad_prefs.ini
+File18=N,N,Base\modules.ini
+File19=N,N,Base\afterdrk.ini
+File20=N,N,Base\win.ad4
+File21=N,N,Base\system.ad4
+File22=N,N,Base\autoexec.ad4
+File23=N,N,Base\previous.inf
+FolderCount=1
+Folder1=Y,N,Base\After Dark
+
+[AD30_New]
+Name=After Dark 3.0
+Description=After Dark 3.0 modules
+Packages=Artist,FrArtist,GerArtist,Baddog,FrBaddog,GerBaddog,Bugs,Clox3,Cycle,Dosshell,Wmorph,Fish3,Toaster3,Frost,Guts_3,Logo_3,Messages,Nirvana_3,Nonsense,Photon,Puzzle_3,Ratrace,Ray,Rebound,Rose_3,Satori_3,Slides3,Spheres_3,Splight,Warp_3,Zooommm,Ybyh
+FileCount=24
+File1=N,N,Base\After Dark 3.0\credits.rtf
+File2=N,N,Base\After Dark 3.0\folder.bmp
+File3=N,N,Base\AD30\folder.afi
+File4=N,N,Base\adxpl300.dll
+File5=N,N,Base\djpg.dll
+File6=N,N,Base\dtarga.dll
+File7=N,N,Base\readbmp.dll
+File8=N,N,Base\readfile.dll
+File9=N,N,Base\readgif.dll
+File10=N,N,Base\readmmp.dll
+File11=N,N,Base\readpcx.dll
+File12=N,N,Base\stoikdth.dll
+File13=N,N,Base\Bitmaps\adlogo.bmp
+File14=N,N,Base\Bitmaps\Earth.bmp
+File15=N,N,Base\Bitmaps\Toastvga.bmp
+File16=N,N,Base\Music\TellIntr.mid
+File17=N,N,Base\Music\TellLoop.mid
+File18=N,N,Base\Music\TellEnd.mid
+File19=N,N,Base\Sounds\Clockchm.wav
+File20=N,N,Base\Sounds\Ding.wav
+File21=N,N,Base\mesg_ad3.dat
+File22=N,N,Base\nonsense.txt
+File23=N,N,Base\After Dark 3.0\Flying Toilets.ad
+File24=N,Y,Base\adtool.dll
+FolderCount=5
+Folder1=N,N,Base\After Dark 3.0
+Folder2=N,N,Base\AD30
+Folder3=Y,N,Base\Music
+Folder4=Y,N,Base\Bitmaps
+Folder5=Y,N,Base\Sounds
+
+[Artist]
+Name=Artist
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Artist.ad
+File2=N,N,Base\AD30\Artist.ad
+
+[FrArtist]
+Name=Artiste
+FileCount=1
+File1=N,N,Base\After Dark 3.0\Artiste.ad
+
+[GerArtist]
+Name=Kunstler
+FileCount=1
+File1=N,N,Base\After Dark 3.0\Kunstler.ad
+
+[Baddog]
+Name=Bad Dog!
+FileCount=2
+;;
+;;  for each of these old modules, there are two possible files:
+;;  the module before the engine has renamed it, and the renamed
+;;  module.
+;;
+File1=N,N,Base\After Dark 3.0\Bad Dog!.ad
+File2=N,N,Base\AD30\Baddog.ad
+
+[FrBaddog]
+Name=Sale Chien!
+FileCount=1
+File1=N,N,Base\After Dark 3.0\Sale Chien!.ad
+
+[GerBaddog]
+Name=Boser Hund
+FileCount=1
+File1=N,N,Base\After Dark 3.0\Boser Hund.ad
+
+[Bugs]
+Name=Bugs
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Bugs.ad
+File2=N,N,Base\AD30\Bugs.ad
+
+[Clox3]
+Name=Clocks 3.0
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Clocks 3.0.ad
+File2=N,N,Base\AD30\Clox3.ad
+
+[Cycle]
+Name=Daredevil Dan
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Daredevil Dan.ad
+File2=N,N,Base\AD30\Cycle.ad
+
+[Dosshell]
+Name=DOS Shell
+FileCount=2
+File1=N,N,Base\After Dark 3.0\DOS Shell.ad
+File2=N,N,Base\AD30\Dosshell.ad
+
+[Frost]
+Name=Frost and Fire
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Frost and Fire.ad
+File2=N,N,Base\AD30\Frost.ad
+
+[Guts_3]
+Name=Guts
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Guts.ad
+File2=N,N,Base\AD30\Guts.ad
+
+[Logo_3]
+Name=Logo
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Logo.ad
+File2=N,N,Base\AD30\Logo.ad
+
+[Messages]
+Name=Messages
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Messages.ad
+File2=N,N,Base\AD30\Messages.ad
+
+[Nirvana_3]
+Name=Nirvana
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Nirvana.ad
+File2=N,N,Base\AD30\Nirvana.ad
+
+[Nonsense]
+Name=Nonsense
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Nonsense.ad
+File2=N,N,Base\AD30\Nonsense.ad
+
+[Photon]
+Name=Photon
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Photon.ad
+File2=N,N,Base\AD30\Photon.ad
+
+[Puzzle_3]
+Name=Puzzle
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Puzzle.ad
+File2=N,N,Base\AD30\Puzzle.ad
+
+[Ratrace]
+Name=Rat Race
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Rat Race.ad
+File2=N,N,Base\AD30\Ratrace.ad
+
+[Ray]
+Name=Ray
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Ray.ad
+File2=N,N,Base\AD30\Ray.ad
+FolderCount=1
+Folder1=N,Y,Base\Traces
+
+[Rebound]
+Name=Rebound
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Rebound.ad
+File2=N,N,Base\AD30\Rebound.ad
+
+[Rose_3]
+Name=Rose
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Rose.ad
+File2=N,N,Base\AD30\Rose.ad
+
+[Satori_3]
+Name=Satori
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Satori.ad
+File2=N,N,Base\AD30\Satori.ad
+
+[Slides3]
+Name=SlideShow
+FileCount=3
+File1=N,N,Base\After Dark 3.0\SlideShow.ad
+File2=N,N,Base\AD30\Slides3.ad
+File3=N,N,Base\bitmaps.adc
+
+[Spheres_3]
+Name=Spheres
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Spheres.ad
+File2=N,N,Base\AD30\Spheres.ad
+
+[Splight]
+Name=Spotlight
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Spotlight.ad
+File2=N,N,Base\AD30\Splight.ad
+
+[Toaster3]
+Name=Flying Toasters Pro
+FileCount=4
+File1=N,N,Base\After Dark 3.0\Flying Toasters Pro.ad
+File2=N,N,Base\AD30\Toaster3.ad
+File3=N,N,Base\Music\Omtw.mid
+File4=N,N,Base\Music\Valkyrie.mid
+
+[Warp_3]
+Name=Warp!
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Warp!.ad
+File2=N,N,Base\AD30\Warp.ad
+
+[Zooommm]
+Name=Zooommm!
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Zooommm!.ad
+File2=N,N,Base\AD30\Zooommm.ad
+
+[Ybyh]      
+Name=You Bet Your Head
+FileCount=5
+File1=N,N,Base\After Dark 3.0\You Bet Your Head.ad
+File2=N,N,Base\AD30\Ybyh.ad
+File3=N,N,Base\Music\YbyhClck.mid
+File4=N,N,Base\Music\YbyhThem.mid
+File5=N,N,Base\Music\YbyhWin.mid
+
+[Fish3]         
+Name=Fish Pro
+FileCount=2
+File1=N,N,Base\After Dark 3.0\Fish Pro.ad
+File2=N,N,Base\AD30\Fish3.ad
+
+[Wmorph]
+Name=Draw Morph
+FileCount=38
+File1=N,N,Base\After Dark 3.0\Draw Morph.ad
+File2=N,N,Base\AD30\Wmorph.ad
+File3=N,N,Base\After Dark 3.0\Morph1.dat
+File4=N,N,Base\After Dark 3.0\Morph1.dtb
+File5=N,N,Base\After Dark 3.0\Morph2.dat
+File6=N,N,Base\After Dark 3.0\Morph2.dtb
+File7=N,N,Base\After Dark 3.0\Morph3.dat
+File8=N,N,Base\After Dark 3.0\Morph3.dtb
+File9=N,N,Base\After Dark 3.0\Morph4.dat
+File10=N,N,Base\After Dark 3.0\Morph4.dtb
+File11=N,N,Base\After Dark 3.0\Morph5.dat
+File12=N,N,Base\After Dark 3.0\Morph5.dtb
+File13=N,N,Base\After Dark 3.0\Morphclk.dat
+File14=N,N,Base\After Dark 3.0\Morphclk.dtb
+File15=N,N,Base\After Dark 3.0\Umorph1.dat
+File16=N,N,Base\After Dark 3.0\Umorph1.dtb
+File17=N,N,Base\After Dark 3.0\Umorph2.dat
+File18=N,N,Base\After Dark 3.0\Umorph2.dtb
+File19=N,N,Base\After Dark 3.0\Umorph3.dat
+File20=N,N,Base\After Dark 3.0\Umorph3.dtb
+File21=N,N,Base\AD30\Morph1.dat
+File22=N,N,Base\AD30\Morph1.dtb
+File23=N,N,Base\AD30\Morph2.dat
+File24=N,N,Base\AD30\Morph2.dtb
+File25=N,N,Base\AD30\Morph3.dat
+File26=N,N,Base\AD30\Morph3.dtb
+File27=N,N,Base\AD30\Morph4.dat
+File28=N,N,Base\AD30\Morph4.dtb
+File29=N,N,Base\AD30\Morph5.dat
+File30=N,N,Base\AD30\Morph5.dtb
+File31=N,N,Base\AD30\Morphclk.dat
+File32=N,N,Base\AD30\Morphclk.dtb
+File33=N,N,Base\AD30\Umorph1.dat
+File34=N,N,Base\AD30\Umorph1.dtb
+File35=N,N,Base\AD30\Umorph2.dat
+File36=N,N,Base\AD30\Umorph2.dtb
+File37=N,N,Base\AD30\Umorph3.dat
+File38=N,N,Base\AD30\Umorph3.dtb
+
+[30French]
+Name=After Dark 3.0 French
+Description= Extra components for German After Dark 3.0
+FileCount=18
+File1=N,N,Base\After Dark 3.0\Sale Chein!.ad
+File2=N,N,Base\After Dark 3.0\Rebonds.ad
+File3=N,N,Base\After Dark 3.0\Givre et Feu.ad
+File4=N,N,Base\After Dark 3.0\Poissons Pro.ad
+File5=N,N,Base\After Dark 3.0\Grille-Pain Pro.ad
+File6=N,N,Base\After Dark 3.0\Artiste.ad
+File7=N,N,Base\After Dark 3.0\Metamorphose.ad
+File8=N,N,Base\After Dark 3.0\Non-Sens.ad
+File9=N,N,Base\After Dark 3.0\Course de Rats.ad
+File10=N,N,Base\After Dark 3.0\Lumiere Spot.ad
+File11=N,N,Base\After Dark 3.0\Quiz!.ad
+File12=N,N,Base\After Dark 3.0\Horloges.ad
+File13=N,N,Base\After Dark 3.0\Insectes.ad
+File14=N,N,Base\After Dark 3.0\Serpents.ad
+File15=N,N,Base\After Dark 3.0\Casse-Cou.ad
+File16=N,N,Base\After Dark 3.0\Diamont.ad
+File17=N,N,Base\After Dark 3.0\Diaporama.ad
+File18=N,N,Base\After Dark 3.0\DOS.ad
+
+[30 German]
+Name=After Dark 3.0 German
+Description=Extra components for German After Dark 3.0
+FileCount=16
+File1=N,N,Base\After Dark 3.0\Boser Hund.ad
+File2=N,N,Base\After Dark 3.0\Billiard.ad
+File3=N,N,Base\After Dark 3.0\Feuer & Eis.ad
+File4=N,N,Base\After Dark 3.0\Fische Pro.ad
+File5=N,N,Base\After Dark 3.0\Fliegende Toaster.ad
+File6=N,N,Base\After Dark 3.0\Kunstler.ad
+File7=N,N,Base\After Dark 3.0\Metamorphosen.ad
+File8=N,N,Base\After Dark 3.0\Non Sens.ad
+File9=N,N,Base\After Dark 3.0\Rattenrennen.ad
+File10=N,N,Base\After Dark 3.0\Spot-Licht.ad
+File11=N,N,Base\After Dark 3.0\Nirwana.ad
+File12=N,N,Base\After Dark 3.0\Spruche.ad
+File13=N,N,Base\After Dark 3.0\Total-Behammert-Quiz!.ad
+File14=N,N,Base\After Dark 3.0\Uhren.ad
+File15=N,N,Base\After Dark 3.0\Ungeiefer.ad
+File16=N,N,Base\After Dark 3.0\Verschingung.ad
+
+[AD20]
+Name=After Dark 2.0
+Description=After Dark 2.0 modules
+Packages=3dbounce,clocks,draino,fade,toasters2,aqua,globe,grafstat,grav,laser,logo,magic,marbles,message,mirrors,mondrian,mountain,nocturne,penrose,punch,puzzle,rain,rainstor,rose,satori,sgyra,shapes,slidesho,sounder,spheres,spotlite,stained,string,swans,vertigo,warp,worms,wrap,zot
+FileCount=3
+File1=N,N,Base\After Dark 2.0\credits.rtf
+File2=N,N,Base\After Dark 2.0\folder.bmp
+File3=N,N,Base\AD20\folder.afi
+FolderCount=5
+Folder1=N,N,Base\After Dark 2.0
+Folder2=N,N,Base\AD20
+Folder3=Y,N,Base\Music
+Folder4=Y,N,Base\Sounds
+Folder5=Y,N,Base\Bitmaps
+
+[3dbounce]
+Name=GeoBounce
+FileCount=2
+File1=N,N,Base\After Dark 2.0\GeoBounce.ad
+File2=N,N,Base\AD20\3dbounce.ad
+
+[aqua]
+Name=Aquatic Realm
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Aquatic Realm.ad
+File2=N,N,Base\AD20\aqua.ad
+
+[clocks]
+Name=Clocks
+FileCount=2
+File1=N,N,Base\After Dark 2.0\clocks.ad
+File2=N,N,Base\AD20\clocks.ad
+
+[draino]
+Name=Down the Drain
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Down the Drain.ad
+File2=N,N,Base\AD20\draino.ad
+
+[fade]
+Name=Fade Away
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Fade Away.ad
+File2=N,N,Base\AD20\fade.ad
+
+[toasters2]
+Name=Flying Toasters
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Flying Toasters.ad
+File2=N,N,Base\AD20\ad2toast.ad
+
+[globe]
+Name=Globe
+FileCount=2
+File1=N,N,Base\After Dark 2.0\globe.ad
+File2=N,N,Base\AD20\globe.ad
+
+[grafstat]
+Name=GraphStat
+FileCount=2
+File1=N,N,Base\After Dark 2.0\GraphStat.ad
+File2=N,N,Base\AD20\grafstat.ad
+
+[grav]
+Name=Gravity
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Gravity.ad
+File2=N,N,Base\AD20\grav.ad
+
+[laser]
+Name=Lasers
+FileCount=2
+File1=N,N,Base\After Dark 2.0\lasers.ad
+File2=N,N,Base\AD20\laser.ad
+
+[logo]
+Name=Logo
+FileCount=2
+File1=N,N,Base\After Dark 2.0\logo.ad
+File2=N,N,Base\AD20\logo.ad
+
+[magic]
+Name=Magic
+FileCount=2
+File1=N,N,Base\After Dark 2.0\magic.ad
+File2=N,N,Base\AD20\magic.ad
+
+[marbles]
+Name=Marbles
+FileCount=2
+File1=N,N,Base\After Dark 2.0\marbles.ad
+File2=N,N,Base\AD20\marbles.ad
+
+[message]
+Name=Message
+FileCount=2
+File1=N,N,Base\After Dark 2.0\message.ad
+File2=N,N,Base\AD20\messages.ad
+
+[mirrors]
+Name=Hall of Mirrors
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Hall of Mirrors.ad
+File2=N,N,Base\AD20\mirrors.ad
+
+[mondrian]
+Name=Mondrian
+FileCount=2
+File1=N,N,Base\After Dark 2.0\mondrian.ad
+File2=N,N,Base\AD20\mondrian.ad
+
+[mountain]
+Name=Mountains
+FileCount=2
+File1=N,N,Base\After Dark 2.0\mountains.ad
+File2=N,N,Base\AD20\mountain.ad
+
+[nocturne]
+Name=Nocturnes
+FileCount=2
+File1=N,N,Base\After Dark 2.0\nocturnes.ad
+File2=N,N,Base\AD20\nocturne.ad
+
+[penrose]
+Name=Penrose
+FileCount=2
+File1=N,N,Base\After Dark 2.0\penrose.ad
+File2=N,N,Base\AD20\penrose.ad
+
+[punch]
+Name=Punch Out.ad
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Punch Out.ad
+File2=N,N,Base\AD20\punch.ad
+
+[puzzle]
+Name=Puzzle
+FileCount=2
+File1=N,N,Base\After Dark 2.0\puzzle.ad
+File2=N,N,Base\AD20\puzzle.ad
+
+[rain]
+Name=Hard Rain
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Hard Rain.ad
+File2=N,N,Base\AD20\rain.ad
+
+[rainstor]
+Name=Rainstorm
+FileCount=2
+File1=N,N,Base\After Dark 2.0\rainstorm.ad
+File2=N,N,Base\AD20\rainstor.ad
+
+[rose]
+Name=Rose
+FileCount=2
+File1=N,N,Base\After Dark 2.0\rose.ad
+File2=N,N,Base\AD20\rose.ad
+
+[satori]
+Name=Satori
+FileCount=2
+File1=N,N,Base\After Dark 2.0\satori.ad
+File2=N,N,Base\AD20\satori.ad
+
+[sgyra]
+Name=Spiral Gyra
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Spiral Gyra.ad
+File2=N,N,Base\AD20\sgyra.ad
+
+[shapes]
+Name=Shapes
+FileCount=2
+File1=N,N,Base\After Dark 2.0\shapes.ad
+File2=N,N,Base\AD20\shapes.ad
+
+[slidesho]
+Name=Slide Show
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Slide Show.ad
+File2=N,N,Base\AD20\slidesho.ad
+
+[sounder]
+Name=Sounder
+FileCount=2
+File1=N,N,Base\After Dark 2.0\sounder.ad
+File2=N,N,Base\AD20\sounder.ad
+
+[spheres]
+Name=Spheres
+FileCount=2
+File1=N,N,Base\After Dark 2.0\spheres.ad
+File2=N,N,Base\AD20\spheres.ad
+
+[spotlite]
+Name=Spotlight
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Spotlight.ad
+File2=N,N,Base\AD20\spotlite.ad
+
+[stained]
+Name=Stained Glass
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Stained Glass.ad
+File2=N,N,Base\AD20\stained.ad
+ 
+[string]
+Name=String Theory
+FileCount=2
+File1=N,N,Base\After Dark 2.0\String Theory.ad
+File2=N,N,Base\AD20\string.ad
+
+[swans]
+Name=Swan Lake
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Swan Lake.ad
+File2=N,N,Base\AD20\swans.ad
+
+[toasters]
+Name=Toasters
+FileCount=2
+File1=N,N,Base\After Dark 2.0\toasters.ad
+File2=N,N,Base\AD20\toasters.ad
+
+[vertigo]
+Name=Vertigo
+FileCount=2
+File1=N,N,Base\After Dark 2.0\vertigo.ad
+File2=N,N,Base\AD20\vertigo.ad
+
+[warp]
+Name=Warp
+FileCount=2
+File1=N,N,Base\After Dark 2.0\warp.ad
+File2=N,N,Base\AD20\warp.ad
+
+[worms]
+Name=Can of Worms
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Can of Worms.ad
+File2=N,N,Base\AD20\worms.ad
+
+[wrap]
+Name=Wrap Around
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Wrap Around.ad
+File2=N,N,Base\AD20\wrap.ad
+
+[zot]
+Name=Zot!
+FileCount=2
+File1=N,N,Base\After Dark 2.0\Zot!.ad
+File2=N,N,Base\AD20\zot.ad
+
+[Disney]
+Name=The Disney Collection
+Description=The Disney Collection Screen Saver modules
+Packages=dalm,beauty,hook,checat,inkwell,dsclocks,donduk,falling,goofy,haunted,jungle,firewrk,mermaid,pinocchi,sorcerer,scrooge
+FileCount=12
+File1=N,N,Windows\adxpl100.dll
+File2=N,N,Base\adxpl100.dll
+File3=Y,N,Base\dis_snd.dll
+File4=N,N,Base\Disney Collection\credits.rtf
+File5=N,N,Base\Disney Collection\folder.bmp
+File6=N,N,Base\Disney\folder.afi
+File7=N,N,Base\music\bandb.mid
+File8=N,N,Base\music\crocodil.mid
+File9=N,N,Base\music\dukasexp.mid
+File10=N,N,Base\music\dukasint.mid
+File11=N,N,Base\music\nutcrack.mid
+File12=N,N,Base\music\undersea.mid
+FolderCount=5
+Folder1=N,N,Base\Disney Collection
+Folder2=N,N,Base\Disney
+Folder3=Y,N,Base\Music
+Folder4=Y,N,Base\Bitmaps
+Folder5=Y,N,Base\Sounds
+
+[hook]
+Name=Captain Hook
+FileCount=2
+File1=N,N,Base\Disney Collection\Captain Hook.ad
+File2=N,N,Base\Disney\hook.ad
+
+[haunted]
+Name=Haunted
+FileCount=2
+File1=N,N,Base\Disney Collection\haunted.ad
+File2=N,N,Base\Disney\haunted.ad
+
+[scrooge]
+Name=Scrooge
+FileCount=2
+File1=N,N,Base\Disney Collection\scrooge.ad
+File2=N,N,Base\Disney\scrooge.ad
+
+[checat]
+Name=Chesire Cat
+FileCount=2
+File1=N,N,Base\Disney Collection\Cheshire Cat.ad
+File2=N,N,Base\Disney\checat.ad
+
+[mermaid]
+Name=LittleMermaid
+FileCount=2
+File1=N,N,Base\Disney Collection\LittleMermaid.ad
+File2=N,N,Base\Disney\mermaid.ad
+
+[pinocchi]
+Name=Pinocchi
+FileCount=2
+File1=N,N,Base\Disney Collection\pinocchio.ad
+File2=N,N,Base\Disney\pinocchi.ad
+
+[beauty]
+Name=Beauty
+FileCount=2
+File1=N,N,Base\Disney Collection\Beauty.ad
+File2=N,N,Base\Disney\beauty.ad
+
+[falling]
+Name=FallingFlower
+FileCount=2
+File1=N,N,Base\Disney Collection\FallingFlower.ad
+File2=N,N,Base\Disney\falling.ad
+
+[sorcerer]
+Name=The Sorcerer
+FileCount=2
+File1=N,N,Base\Disney Collection\The Sorcerer.ad
+File2=N,N,Base\Disney\sorcerer.ad
+
+[dsclocks]
+Name=DisneyClocks
+FileCount=2
+File1=N,N,Base\Disney Collection\DisneyClocks.ad
+File2=N,N,Base\Disney\dsclocks.ad
+
+[goofy]
+Name=Goofy
+FileCount=2
+File1=N,N,Base\Disney Collection\goofy.ad
+File2=N,N,Base\Disney\goofy.ad
+
+[inkwell]
+Name=Digital Ink
+FileCount=2
+File1=N,N,Base\Disney Collection\Digital Ink.ad
+File2=N,N,Base\Disney\inkwell.ad
+
+[firewrk]
+Name=Magic Kingdom
+FileCount=2
+File1=N,N,Base\Disney Collection\MagicKingdom.ad
+File2=N,N,Base\Disney\firewrk.ad
+
+[dalm]
+Name=101 Dalmatians
+FileCount=2
+File1=N,N,Base\Disney Collection\101Dalmatians.ad
+File2=N,N,Base\Disney\dalm.ad
+
+[jungle]
+Name=Jungle Book
+FileCount=2
+File1=N,N,Base\Disney Collection\Jungle Book.ad
+File2=N,N,Base\Disney\jungle.ad
+
+[donduk]
+Name=Donald Paints
+FileCount=2
+File1=N,N,Base\Disney Collection\Donald Paints.ad
+File2=N,N,Base\Disney\donduk.ad
+
+[MAD]
+Name=More After Dark
+Description=More After Dark modules
+Packages=attract,einstein,bogglins,boris,bulge,confetti,dominoes,fforest,flocks,Guts_MAD,hallu,lunatic,mandel,meadow,mmas,modart,mosaic,mowin,origami,pearls,raindrop,saying,saywhat,snake,spin,sunburst,tunnel
+FileCount=3
+File1=N,N,Base\More After Dark\credits.rtf
+File2=N,N,Base\More After Dark\folder.bmp
+File3=N,N,Base\MAD\folder.afi
+FolderCount=5
+Folder1=N,N,Base\More After Dark
+Folder2=N,N,Base\MAD
+Folder3=Y,N,Base\Music
+Folder4=Y,N,Base\Bitmaps
+Folder5=Y,N,Base\Sounds
+
+[attract]
+Name=Strange Attract
+FileCount=2
+File1=N,N,Base\More After Dark\Strange Attract.ad
+File2=N,N,Base\MAD\attract.ad
+
+[einstein]
+Name=Einstein
+FileCount=2
+File1=N,N,Base\More After Dark\einstein.ad
+File2=N,N,Base\MAD\einstein.ad
+
+[bogglins]
+Name=Bogglins
+FileCount=2
+File1=N,N,Base\More After Dark\Bogglins.ad
+File2=N,N,Base\MAD\bogglins.ad
+
+[boris]
+Name=Boris
+FileCount=2
+File1=N,N,Base\More After Dark\Boris.ad
+File2=N,N,Base\MAD\boris.ad
+
+[bulge]
+Name=Bulge
+FileCount=2
+File1=N,N,Base\More After Dark\Bulge.ad
+File2=N,N,Base\MAD\bulge.ad
+
+[confetti]
+Name=ConfettiFactory
+FileCount=2
+File1=N,N,Base\More After Dark\ConfettiFactory.ad
+File2=N,N,Base\MAD\confetti.ad
+
+[dominoes]
+Name=Dominoes
+FileCount=2
+File1=N,N,Base\More After Dark\dominoes.ad
+File2=N,N,Base\MAD\dominoes.ad
+
+[fforest]
+Name=Fractal Forest
+FileCount=2
+File1=N,N,Base\More After Dark\Fractal Forest.ad
+File2=N,N,Base\MAD\fforest.ad
+
+[flocks]
+Name=Flocks
+FileCount=2
+File1=N,N,Base\More After Dark\flocks.ad
+File2=N,N,Base\MAD\flocks.ad
+
+[Guts_MAD]
+Name=Guts
+FileCount=2
+File1=N,N,Base\More After Dark\guts.ad
+File2=N,N,Base\MAD\guts.ad
+
+[hallu]
+Name=Hallucinations
+FileCount=2
+File1=N,N,Base\More After Dark\Hallucinations.ad
+File2=N,N,Base\MAD\hallu.ad
+
+[lunatic]
+Name=Lunatic Fringe
+FileCount=2
+File1=N,N,Base\More After Dark\Lunatic Fringe.ad
+File2=N,N,Base\MAD\lunatic.ad
+File3=N,N,Windows\lundata.dat
+
+[mandel]
+Name=Mandelbrot
+FileCount=2
+File1=N,N,Base\More After Dark\Mandelbrot.ad
+File2=N,N,Base\MAD\mandel.ad
+
+[meadow]
+Name=Meadow
+FileCount=2
+File1=N,N,Base\More After Dark\meadow.ad
+File2=N,N,Base\MAD\meadow.ad
+
+[mmas]
+Name=Om Appliances
+FileCount=2
+File1=N,N,Base\More After Dark\Om Appliances.ad
+File2=N,N,Base\MAD\mmas.ad
+
+[modart]
+Name=Modern Art
+FileCount=3
+File1=N,N,Base\More After Dark\Modern Art.ad
+File2=N,N,Base\MAD\modart.ad
+File3=N,N,Base\modart00.dll
+
+[mosaic]
+Name=Mosaic
+FileCount=2
+File1=N,N,Base\More After Dark\mosaic.ad
+File2=N,N,Base\MAD\mosaic.ad
+
+[mowin]
+Name=Mowin' Man
+FileCount=2
+File1=N,N,Base\More After Dark\Mowin' Man.ad
+File2=N,N,Base\MAD\mowin.ad
+
+[origami]
+Name=Origami
+FileCount=2
+File1=N,N,Base\More After Dark\origami.ad
+File2=N,N,Base\MAD\origami.ad
+
+[pearls]
+Name=Pearls
+FileCount=2
+File1=N,N,Base\More After Dark\pearls.ad
+File2=N,N,Base\MAD\pearls.ad
+
+[raindrop]
+Name=Rain
+FileCount=2
+File1=N,N,Base\More After Dark\rain.ad
+File2=N,N,Base\MAD\raindrop.ad
+
+[saying]
+Name=Saying
+FileCount=2
+File1=N,N,Base\More After Dark\Saying.ad
+File2=N,N,Base\MAD\saying.ad
+
+[saywhat]
+Name=Say What
+FileCount=2
+File1=N,N,Base\More After Dark\Say What.ad
+File2=N,N,Base\MAD\saywhat.ad
+
+[snake]
+Name=Snake
+FileCount=2
+File1=N,N,Base\More After Dark\snake.ad
+File2=N,N,Base\MAD\snake.ad
+
+[spin]
+Name=Spin Brush
+FileCount=2
+File1=N,N,Base\More After Dark\Spin Brush.ad
+File2=N,N,Base\MAD\spin.ad
+
+[sunburst]
+Name=Sunburst
+FileCount=2
+File1=N,N,Base\More After Dark\sunburst.ad
+File2=N,N,Base\MAD\sunburst.ad
+
+[tunnel]
+Name=Tunnel
+FileCount=2
+File1=N,N,Base\More After Dark\Tunnel.ad
+File2=N,N,Base\MAD\tunnel.ad
+
+[StarTrek]
+Name=Star Trek
+Description=Star Trek Screen Saver modules
+Packages=ad_mesg,braincel,comms,final,frontier,horta,ionstorm,mission,spock,tholian,tribble,panels,planets,scottys,sickbay,space,sounder
+FileCount=10
+File1=N,N,Base\Star Trek\credits.rtf
+File2=N,N,Base\Star Trek\folder.bmp
+File3=N,N,Base\Star Trek\folder.afi
+File4=N,N,Base\ST_Res\st_masks.dll
+File5=N,N,Base\ST_Res\st_resdb.dll
+File6=N,N,Base\ST_Res\st_vga.dll
+File7=N,N,Base\ST_Res\st_svga.dll
+File8=N,N,Base\ST_Res\st_snd.dll
+File9=N,N,Base\Star Trek\sounder.ad
+File10=N,N,Base\Sounds\Jim.wav
+FolderCount=7
+Folder1=N,N,Base\Star Trek
+Folder2=N,N,Base\Trekss
+Folder3=N,N,Base\ST_Res
+Folder4=N,N,Base\StarTrek
+Folder5=Y,N,Base\Music
+Folder6=Y,N,Base\Bitmaps
+Folder7=Y,N,Base\Sounds
+
+[ad_mesg]
+Name=Messages
+FileCount=3
+File1=N,N,Base\Star Trek\ad_mesg.ad
+File2=N,N,Base\Trekss\ad_mesg.ad
+File3=N,N,Windows\ad_mesg.ads
+
+[braincel]
+Name=Brain Cells
+FileCount=2
+File1=N,N,Base\Star Trek\Brain Cells.ad
+File2=N,N,Base\Trekss\braincel.ad
+
+[comms]
+Name=Communications
+FileCount=2
+File1=N,N,Base\Star Trek\Communications.ad
+File2=N,N,Base\Trekss\comms.ad
+
+[final]
+Name=Final Exam
+FileCount=2
+File1=N,N,Base\Star Trek\Final Exam.ad
+File2=N,N,Base\Trekss\final.ad
+
+[frontier]
+Name=Final Frontier
+FileCount=2
+File1=N,N,Base\Star Trek\Final Frontier.ad
+File2=N,N,Base\Trekss\frontier.ad
+
+[horta]
+Name=Horta
+FileCount=2
+File1=N,N,Base\Star Trek\Horta.ad
+File2=N,N,Base\Trekss\horta.ad
+
+[ionstorm]
+Name=Ion Storm
+FileCount=2
+File1=N,N,Base\Star Trek\Ion Storm.ad
+File2=N,N,Base\Trekss\ionstorm.ad
+
+[mission]
+Name=The Mission
+FileCount=2
+File1=N,N,Base\Star Trek\The Mission.ad
+File2=N,N,Base\Trekss\mission.ad
+
+[spock]
+Name=Spock
+FileCount=2
+File1=N,N,Base\Star Trek\Spock.ad
+File2=N,N,Base\Trekss\Spock.ad
+
+[tholian]
+Name=Tholian Web
+FileCount=2
+File1=N,N,Base\Star Trek\Tholian Web.ad
+File2=N,N,Base\Trekss\tholian.ad
+
+[tribble]
+Name=Tribbles
+FileCount=2
+File1=N,N,Base\Star Trek\Tribbles.ad
+File2=N,N,Base\Trekss\tribble.ad
+
+[panels]
+Name=Ship Panels
+FileCount=2
+File1=N,N,Base\Star Trek\Ship Panels.ad
+File2=N,N,Base\Trekss\panels.ad
+
+[planets]
+Name=Planetary Atlas
+FileCount=2
+File1=N,N,Base\Star Trek\PlanetaryAtlas.ad
+File2=N,N,Base\Trekss\planets.ad
+
+[scottys]
+Name=Scotty's Files
+FileCount=2
+File1=N,N,Base\Star Trek\Scotty's Files.ad
+File2=N,N,Base\Trekss\scottys.ad
+
+[sickbay]
+Name=Sickbay
+FileCount=2
+File1=N,N,Base\Star Trek\Sickbay.ad
+File2=N,N,Base\Trekss\Sickbay.ad
+
+[space]
+Name=Space
+FileCount=2
+File1=N,N,Base\Star Trek\Space.ad
+File2=N,N,Base\Trekss\Space.ad
+
+[sounder]
+Name=Sounder
+FileCount=3
+File1=N,N,Base\Star Trek\Sounder.ad
+File2=N,N,Base\Trekss\Sounder.ad
+File3=N,N,Base\Sounds\jim.wav
+
+[Simpsons]
+Name=Simpsons
+Description=Simpsons Screen Saver modules
+Packages=homereat,how2draw,krusty,physics,simpfile,snowball,burns,chalkbrd,grampa,grasskrt,ins,lisa,objets,simpclok,simptriv
+FileCount=12
+File1=N,N,Base\adxpl310.dll
+File2=N,N,Base\Simpsons\folder.afi
+File3=N,N,Base\Simpsons\credits.rtf
+File4=N,N,Base\Simpsons\folder.bmp
+File5=N,N,Base\simp_snd.dll
+File6=N,Y,Base\simpsons.hlp
+File7=N,N,Base\music\i&sshow.mid
+File8=N,N,Base\music\mlangry.mid
+File9=N,N,Base\music\mlhappy.mid
+File10=N,N,Base\music\mlsad.mid
+File11=N,N,Base\music\simpsons.mid
+File12=N,N,Base\music\snowball.mid
+FolderCount=4
+Folder1=N,N,Base\Simpsons
+Folder2=Y,N,Base\Music
+Folder3=Y,N,Base\Bitmaps
+Folder4=Y,N,Base\Sounds
+
+[homereat]
+Name=Homer Eats
+FileCount=2
+File1=N,N,Base\Simpsons\homereat.ad
+File2=N,N,Base\Simpsons\Homer Eats.ad
+
+[how2draw]
+Name=How To Draw
+FileCount=2
+File1=N,N,Base\Simpsons\how2draw.ad
+File2=N,N,Base\Simpsons\How To Draw.ad
+
+[krusty]
+Name=Krusty
+FileCount=1
+File1=N,N,Base\Simpsons\krusty.ad
+
+[physics]
+Name=Physics
+FileCount=1
+File1=N,N,Base\Simpsons\physics.ad
+
+[simpfile]
+Name=Files
+FileCount=2
+File1=N,N,Base\Simpsons\simpfile.ad
+File2=N,N,Base\Simpsons\Files.ad
+
+[snowball]
+Name=Snowball I
+FileCount=2
+File1=N,N,Base\Simpsons\snowball.ad
+File2=N,N,Base\Simpsons\Snowball I.ad
+
+[burns]
+Name=Mr. Burns
+FileCount=2
+File1=N,N,Base\Simpsons\burns.ad
+File2=N,N,Base\Simpsons\Mr. Burns.ad
+
+[chalkbrd]
+Name=Chalkboard
+FileCount=2
+File1=N,N,Base\Simpsons\chalkbrd.ad
+File2=N,N,Base\Simpsons\Chalkboard.ad
+
+[grampa]
+Name=Grampa's Wisdom
+FileCount=2
+File1=N,N,Base\Simpsons\grampa.ad
+File2=N,N,Base\Simpsons\Grampa's Wisdom.ad
+
+[grasskrt]
+Name=Grass Skirts
+FileCount=2
+File1=N,N,Base\Simpsons\grasskrt.ad
+File2=N,N,Base\Simpsons\Grass Skirts.ad
+
+[ins]
+Name=Itchy & Scratchy
+FileCount=2
+File1=N,N,Base\Simpsons\ins.ad
+File2=N,N,Base\Simpsons\Itchy & Scratchy.ad
+
+[lisa]
+Name=Lisa's Mood Swings
+FileCount=2
+File1=N,N,Base\Simpsons\lisa.ad
+File2=N,N,Base\Simpsons\Lisa's Mood Swings.ad
+
+[objets]
+Name=Objets B'art
+FileCount=2
+File1=N,N,Base\Simpsons\objets.ad
+File2=N,N,Base\Simpsons\Objets B'art.ad
+
+[simpclok]
+Name=Simpsons Clocks
+FileCount=2
+File1=N,N,Base\Simpsons\simpclok.ad
+File2=N,N,Base\Simpsons\Simpsons Clocks.ad
+
+[simptriv]
+Name=Simpsons Trivia
+FileCount=2
+File1=N,N,Base\Simpsons\simptriv.ad
+File2=N,N,Base\Simpsons\Simpsons Trivia.ad
+
+[Triazzle]
+Name=Triazzle
+Description=Triazzle Screen Saver
+FolderCount=1
+Folder1=N,N,Base\Triazzle
+FileCount=2
+File1=N,N,Base\Triazzle\Triazzle.ad
+File2=N,N,Base\triazle.ad 
+
+[Twisted]
+Name=Totally Twisted
+Description=Totally Twisted Screen Saver modules
+Packages=franken,mikes,phlegm_b,toxic,bungee,cham,cs,mboris,messyges,mimehunt,tclocks,toilet,voyeur
+FolderCount=5
+Folder1=N,N,Base\Twisted
+Folder2=N,N,Base\Totally Twisted
+Folder3=Y,N,Base\Music
+Folder4=Y,N,Base\Bitmaps
+Folder5=Y,N,Base\Sounds
+FileCount=11
+File1=N,N,Base\twisted\folder.afi
+File2=N,N,Base\Totally Twisted\credits.rtf
+File3=N,N,Base\Totally Twisted\folder.bmp
+File4=N,N,Base\adxpl40.dll
+File5=N,N,Base\tt_snd.dll
+File6=N,Y,Base\twisted.hlp
+File7=N,N,Base\Music\dawn.mid
+File8=N,N,Base\Music\fttheme.mid
+File9=N,N,Base\Music\horror.mid
+File10=N,N,Base\Music\mimehunt.mid
+File11=N,N,Base\music\tt_snd.dll
+
+[franken]
+Name=FrankenScreen
+FileCount=2
+File1=N,N,Base\Twisted\franken.ad
+File2=N,N,Base\Totally Twisted\FrankenScreen.ad
+
+[mikes]
+Name=Mike's So-called Life
+FileCount=2
+File1=N,N,Base\Twisted\mikes.ad
+File2=N,N,Base\Totally Twisted\Mike's So-called Life.ad
+
+[phlegm_b]
+Name=Phlegm Boy
+FileCount=2
+File1=N,N,Base\Twisted\phlegm_b.ad
+File2=N,N,Base\Totally Twisted\Phlegm Boy.ad
+
+[toxic]
+Name=Toxic Swamp
+FileCount=2
+File1=N,N,Base\Twisted\toxic.ad
+File2=N,N,Base\Totally Twisted\Toxic Swamp.ad
+
+[bungee]
+Name=Bungee Roulette
+FileCount=2
+File1=N,N,Base\Twisted\bungee.ad
+File2=N,N,Base\Totally Twisted\Bungee Roulette.ad
+
+[cham]
+Name=Chameleon
+FileCount=2
+File1=N,N,Base\Twisted\cham.ad
+File2=N,N,Base\Totally Twisted\Chameleon.ad
+
+[cs]
+Name=ComingSoon!
+FileCount=2
+File1=N,N,Base\Twisted\cs.ad
+File2=N,N,Base\Totally Twisted\ComingSoon!.ad
+
+[mboris]
+Name=Mowin' Boris
+FileCount=2
+File1=N,N,Base\Twisted\mboris.ad
+File2=N,N,Base\Totally Twisted\Mowin' Boris.ad
+
+[messyges]
+Name=Message Mayhem
+FileCount=2
+File1=N,N,Base\Twisted\messyges.ad
+File2=N,N,Base\Totally Twisted\Message Mayhem.ad
+
+[mimehunt]
+Name=Mime Hunt
+FileCount=2
+File1=N,N,Base\Twisted\mimehunt.ad
+File2=N,N,Base\Totally Twisted\Mime Hunt.ad
+
+[tclocks]
+Name=Shock Clocks
+FileCount=2
+File1=N,N,Base\Twisted\tclocks.ad
+File2=N,N,Base\Totally Twisted\Shock Clocks.ad
+
+[toilet]
+Name=Flying Toilets
+FileCount=2
+File1=N,N,Base\Twisted\toilet.ad
+File2=N,N,Base\Totally Twisted\Flying Toilets.ad
+
+[voyeur]
+Name=Voyeur
+FileCount=2
+File1=N,N,Base\Twisted\voyeur.ad
+File2=N,N,Base\Totally Twisted\Voyeur.ad
+
+[Looney]
+Name=Looney Tunes
+Description=Looney Tunes Screen Saver modules
+Packages=conduckt,pepe,rabbitrn,wockets,acmeshop,cart101,frog,ltmessgs,marvin,puttytat,sam,taz
+FolderCount=5
+Folder1=N,N,Base\lnytunes
+Folder2=N,N,Base\Looney Tunes
+Folder3=Y,N,Base\Music
+Folder4=Y,N,Base\Bitmaps
+Folder5=Y,N,Base\Sounds
+FileCount=15
+File1=N,N,Base\twisted\folder.afi
+File2=N,N,Base\Looney Tunes\credits.rtf
+File3=N,N,Base\Looney Tunes\folder.bmp
+File4=N,N,Base\adxpl41.dll
+File5=N,N,Base\lt_sound.dll
+File6=N,Y,Base\lnytunes.hlp
+File7=N,N,Base\music\acme.mid
+File8=N,N,Base\music\cancan.mid
+File9=N,N,Base\music\china.mid
+File10=N,N,Base\music\frog.mid
+File11=N,N,Base\music\gb&u.mid
+File12=N,N,Base\music\liszt.mid
+File13=N,N,Base\music\marslls.mid
+File14=N,N,Base\music\puttytat.mid
+File15=N,N,Base\music\yosemite.mid
+
+[conduckt]
+Name=Conducktor
+FileCount=4
+File1=N,N,Base\lnytunes\conduckt.ad
+File2=N,N,Base\Looney Tunes\Conducktor.ad
+File3=N,N,Base\music\1812.mid
+File4=N,N,Base\music\anvil.mid
+
+[pepe]
+Name=Desquetoppe D'amour
+FileCount=4
+File1=N,N,Base\lnytunes\pepe.ad
+File2=N,N,Base\Looney Tunes\Desquetoppe D_amour.ad
+File3=N,N,Base\Looney Tunes\Desquetoppe D'amour.ad
+File4=N,N,Base\music\pepe2.mid
+
+[rabbitrn]
+Name=Rabbitron
+FileCount=2
+File1=N,N,Base\lnytunes\rabbitrn.ad
+File2=N,N,Base\Looney Tunes\Rabbitron.ad
+
+[wockets]
+Name=Wockets' Wed Gware
+FileCount=3
+File1=N,N,Base\lnytunes\wockets.ad
+File2=N,N,Base\Looney Tunes\Wockets' Wed Gware.ad
+File3=N,N,Base\music\wockets.mid
+
+[acmeshop]
+Name=ACME Home Shopping
+FileCount=2
+File1=N,N,Base\lnytunes\acmeshop.ad
+File2=N,N,Base\Looney Tunes\ACME Home Shopping.ad
+
+[cart101]
+Name=Cartoons 101
+FileCount=2
+File1=N,N,Base\lnytunes\cart101.ad
+File2=N,N,Base\Looney Tunes\Cartoons 101.ad
+
+[frog]
+Name=Michigan J. Frog
+FileCount=2
+File1=N,N,Base\lnytunes\frog.ad
+File2=N,N,Base\Looney Tunes\Michigan J. Frog.ad
+
+[ltmessgs]
+Name=Messages
+FileCount=2
+File1=N,N,Base\lnytunes\ltmessgs.ad
+File2=N,N,Base\Looney Tunes\Messages.ad
+
+[marvin]
+Name=Marvin's Invasion
+FileCount=2
+File1=N,N,Base\lnytunes\marvin.ad
+File2=N,N,Base\Looney Tunes\Marvin's Invasion.ad
+
+[puttytat]
+Name=Putty Tat Splat!
+FileCount=2
+File1=N,N,Base\lnytunes\puttytat.ad
+File2=N,N,Base\Looney Tunes\Putty Tat Splat!.ad
+
+[sam]
+Name=Yosemite Sam
+FileCount=2
+File1=N,N,Base\lnytunes\sam.ad
+File2=N,N,Base\Looney Tunes\Yosemite Sam.ad
+
+[taz]
+Name=Taz Desktop
+FileCount=2
+File1=N,N,Base\lnytunes\taz.ad
+File2=N,N,Base\Looney Tunes\Taz Desktop.ad
+
+[XMen]
+Name=X-Men
+Description=X-Men Screen Saver modules
+Packages=xbeast,xclocks,xmagneto,xsoundfx,xwomen,telepath,xaction,xberzerk,xlogos,xsentinl,xtrivia
+FolderCount=4
+Folder1=N,N,Base\x-men
+Folder2=Y,N,Base\Music
+Folder3=Y,N,Base\Bitmaps
+Folder4=Y,N,Base\Sounds
+FileCount=5
+File1=N,N,Base\x-men\folder.afi
+File2=N,N,Base\x-men\credits.rtf
+File3=N,N,Base\x-men\folder.bmp
+File4=N,Y,Base\xmen.hlp
+File5=N,N,Base\xmen_snd.dll
+
+[xbeast]
+Name=Beast
+FileCount=2
+File1=N,N,Base\X-Men\xbeast.ad
+File2=N,N,Base\X-Men\Beast.ad
+
+[xclocks]
+Name=X-Clocks
+FileCount=2
+File1=N,N,Base\X-Men\xclocks.ad
+File2=N,N,Base\X-Men\X-Clocks.ad
+
+[xmagneto]
+Name=Magneto
+FileCount=2
+File1=N,N,Base\X-Men\xmagneto.ad
+File2=N,N,Base\X-Men\Magneto.ad
+
+[xsoundfx]
+Name=Sound FX
+FileCount=2
+File1=N,N,Base\X-Men\xsoundfx.ad
+File2=N,N,Base\X-Men\Sound FX.ad
+
+[xwomen]
+Name=X-Women
+FileCount=2
+File1=N,N,Base\X-Men\xwomen.ad
+File2=N,N,Base\X-Men\X-Women.ad
+
+[telepath]
+Name=Telepathy
+FileCount=2
+File1=N,N,Base\X-Men\telepath.ad
+File2=N,N,Base\X-Men\Telepathy.ad
+
+[xaction]
+Name=X-Men Action
+FileCount=2
+File1=N,N,Base\X-Men\xaction.ad
+File2=N,N,Base\X-Men\X-Men Action.ad
+
+[xberzerk]
+Name=Berzerk
+FileCount=2
+File1=N,N,Base\X-Men\xberzerk.ad
+File2=N,N,Base\X-Men\Berzerk.ad
+
+[xlogos]
+Name=X-Logos
+FileCount=2
+File1=N,N,Base\X-Men\xlogos.ad
+File2=N,N,Base\X-Men\X-Logos.ad
+
+[xsentinl]
+Name=Sentinels
+FileCount=2
+File1=N,N,Base\X-Men\xsentinl.ad
+File2=N,N,Base\X-Men\Sentinels.ad
+
+[xtrivia]
+Name=X-Trivia
+FileCount=2
+File1=N,N,Base\X-Men\xtrivia.ad
+File2=N,N,Base\X-Men\X-Trivia.ad
+
+[STMP]
+Name=Star Trek Movie Posters
+Description=Star Trek Movie Poster screen saver
+FolderCount=6
+Folder1=N,N,Base\stmpsp
+Folder2=N,N,Base\Star Trek Posters
+Folder3=N,Y,Base\StarTrek
+Folder4=Y,N,Base\Music
+Folder5=Y,N,Base\Bitmaps
+Folder6=Y,N,Base\Sounds
+FileCount=9
+File1=N,N,Base\stmpsp\folder.afi
+File2=N,N,Base\Star Trek Posters\credits.rtf
+File3=N,N,Base\Star Trek Posters\folder.bmp
+File4=N,N,Base\stmpsp\startrek.ad
+File5=N,N,Base\Star Trek Posters\StarTrek.ad
+File6=N,N,Base\Star Trek Posters\StarTrek Poster.ad
+File7=N,N,Base\startrek.txt
+File8=N,N,Base\startrek.wri
+File9=N,N,Base\deco.dll
+
+[STTNG]
+Name=Star Trek - TNG
+Description=Star Trek the Next Generation Screen Saver modules
+Packages=nanites,starbase,tachyon,troi,data,enc,offrev,persfile,stations,theborg,tngmesg,warpefct,worf
+FolderCount=5
+Folder1=N,N,Base\st-tng
+Folder2=N,N,Base\Star Trek - TNG
+Folder3=Y,N,Base\Music
+Folder4=Y,N,Base\Bitmaps
+Folder5=Y,N,Base\Sounds
+FileCount=15
+File1=N,N,Base\st-tng\folder.afi
+File2=N,N,Base\Star Trek - TNG\credits.rtf
+File3=N,N,Base\Star Trek - TNG\folder.bmp
+File4=N,Y,Base\st-tng.hlp
+File5=N,N,Base\tng_art.dll
+File6=N,N,Base\tng_snd.dll
+File7=N,N,Base\music\brsaints.mid
+File8=N,N,Base\music\chacha.mid
+File9=N,N,Base\music\foxtrot.mid
+File10=N,N,Base\music\rhumba.mid
+File11=N,N,Base\music\suspense.mid
+File12=N,N,Base\music\tag.mid
+File13=N,N,Base\music\tap.mid
+File14=N,N,Base\music\theme.mid
+File15=N,N,Base\adxpl320.dll
+
+[nanites]
+Name=Nanites
+FileCount=2
+File1=N,N,Base\st-tng\nanites.ad
+File2=N,N,Base\Star Trek - TNG\Nanites.ad
+
+[starbase]
+Name=Starbase
+FileCount=2
+File1=N,N,Base\st-tng\starbase.ad
+File2=N,N,Base\Star Trek - TNG\Starbase.ad
+
+[tachyon]
+Name=Tachyon Particle Field
+FileCount=2
+File1=N,N,Base\st-tng\tachyon.ad
+File2=N,N,Base\Star Trek - TNG\Tachyon Particle Field.ad
+
+[troi]
+Name=Counselor Troi
+FileCount=2
+File1=N,N,Base\st-tng\troi.ad
+File2=N,N,Base\Star Trek - TNG\Counselor Troi.ad
+
+[data]
+Name=Data Dances
+FileCount=2
+File1=N,N,Base\st-tng\data.ad
+File2=N,N,Base\Star Trek - TNG\Data Dances.ad
+
+[enc]
+Name=Encounters
+FileCount=2
+File1=N,N,Base\st-tng\enc.ad
+File2=N,N,Base\Star Trek - TNG\Encounters.ad
+
+[offrev]
+Name=Officer's Review
+FileCount=2
+File1=N,N,Base\st-tng\offrev.ad
+File2=N,N,Base\Star Trek - TNG\Officer's Review.ad
+
+[persfile]
+Name=Personnel Files
+FileCount=2
+File1=N,N,Base\st-tng\persfile.ad
+File2=N,N,Base\Star Trek - TNG\Personnel Files.ad
+
+[stations]
+Name=Science Stations
+FileCount=2
+File1=N,N,Base\st-tng\stations.ad
+File2=N,N,Base\Star Trek - TNG\Science Stations.ad
+
+[theborg]
+Name=The Borg
+FileCount=2
+File1=N,N,Base\st-tng\theborg.ad
+File2=N,N,Base\Star Trek - TNG\The Borg.ad
+
+[tngmesg]
+Name=Starfleet Messages
+FileCount=2
+File1=N,N,Base\st-tng\tngmesg.ad
+File2=N,N,Base\Star Trek - TNG\Starfleet Messages.ad
+
+[warpefct]
+Name=Warp Effect
+FileCount=2
+File1=N,N,Base\st-tng\warpefct.ad
+File2=N,N,Base\Star Trek - TNG\Warp Effect.ad
+
+[worf]
+Name=Worf's Weapons
+FileCount=2
+File1=N,N,Base\st-tng\worf.ad
+File2=N,N,Base\Star Trek - TNG\Worf's Weapons.ad
+
+[Marvel]
+Name=Marvel Screen Posters
+Description=Marvel Screen Posters screen saver
+FolderCount=3
+Folder1=N,Y,Base\mrvlimag
+Folder2=N,Y,Base\mrvlsp
+Folder3=N,Y,Base\Marvel Posters
+FileCount=2
+File1=N,N,Base\Marvelad.txt
+File2=N,N,Base\deco.dll
+
+[AD40]
+Name=After Dark 4.0
+Description=After Dark 4.0 Animated Modules
+FileCount=20
+File1=N,N,Base\After Dark 4.lst
+File2=N,N,Base\adpage.gid
+File3=N,N,Base\adw40.gid
+File4=N,N,Base\Turtle01.bin
+File5=N,N,Base\Turtle02.bin
+File6=N,N,Base\Turtle03.bin
+File7=N,N,Base\Turtle04.bin
+File8=N,N,Base\Turtle05.bin
+File9=N,N,Base\Turtle06.bin
+File10=N,N,Base\Turtle07.bin
+File11=N,N,Base\Turtle08.bin
+File12=N,N,Base\After Dark 4.0\Marbles1.ini
+File13=N,N,Base\After Dark 4.0\Marbles2.ini
+File14=N,N,Base\After Dark 4.0\Marbles3.ini
+File15=N,N,Base\After Dark 4.0\Marbles4.ini
+File16=N,N,Base\After Dark 4.0\Marbles5.ini
+File17=N,N,Base\After Dark 4.0\Marbles6.ini
+File18=N,N,Base\After Dark 4.0\Marbles7.ini
+File19=N,N,Base\After Dark 4.0\Marbles8.ini
+File20=N,N,Base\After Dark 4.0\rodger.ini
+
+[ADOL]
+Name=After Dark Online
+Description= After Dark Online modules
+FileCount=23
+File1=N,N,Base\After Dark Online\AD Online Downloader.exe
+File2=N,N,Base\After Dark Online\AD Online Downloader.ini
+File3=N,N,Base\After Dark Online\AD Online Properties.exe
+File4=Y,Y,Base\After Dark Online\AD Online Scheduler.exe
+File5=Y,Y,Base\After Dark Online\AD Online Updater.exe
+File6=N,N,Base\After Dark Online\ADOnline.ini
+File7=N,N,Base\After Dark Online\DBC Financial News.ad
+File8=N,N,Base\After Dark Online\Sports Illustrated Online.ad
+File9=N,N,Base\After Dark Online\USA Today.ad
+File10=N,N,Base\After Dark Online\The Wall Street Journal.ad
+File11=N,N,Base\After Dark Online\ZD Net.ad
+File12=N,N,Base\After Dark Online\Bezerk.ad
+File13=N,N,Base\After Dark Online\credits.rtf
+File14=N,N,Base\After Dark Online\folder.bmp
+File15=N,N,Base\After Dark Online\Fileglue.dll
+File16=N,N,Base\After Dark Online\tech.srf
+File17=N,N,Base\After Dark Online\adonline.tmp
+File18=N,N,Base\After Dark Online\readme.txt
+File19=N,N,Base\After Dark Online\License Agreement.txt
+File20=N,N,Base\adol.dll
+File21=N,N,Windows\Start Menu\Programs\Startup\After Dark Online Scheduler.lnk
+File22=N,N,Base\After Dark Online\beZerk - The Premier Online Entertainment Network.url
+File23=N,N,Base\After Dark Online\AT&T WorldNet Setup.EXE
+FolderCount=6
+Folder1=N,Y,Base\After Dark Online\cache
+Folder2=N,Y,Base\After Dark Online\static
+Folder3=N,Y,Base\After Dark Online\posts
+Folder4=N,Y,Base\After Dark Online\updates
+Folder5=N,Y,Windows\Start Menu\Programs\After Dark Online
+Folder6=N,N,Base\After Dark Online
+
+[Custom]
+Name=Custom Screen Savers
+Description=After Dark Custom Screen Savers
+Packages=Black,Bettmann,BlueMan,Seasons,Ghosts,Global,Goines,Merck,Nycomed,Yamato
+FileCount=34
+File1=N,N,Base\Custom\Logo.ad
+File2=N,N,Base\Custom\PrePRESS.ad
+File3=N,N,Base\Rsg_golf\Golf22GA.ad
+File4=N,N,Base\Custom\Acromegaly Slides.ad
+File5=N,N,Base\Custom\AD Custom Demo.ad
+File6=N,N,Base\Custom\Blue Man.ad
+File7=N,N,Base\Custom\Collins.ad
+File8=N,N,Base\Custom\credits.rtf
+File9=N,N,Base\Custom\folder.bmp
+File10=N,N,Base\Custom\folder.afi
+File11=N,N,Base\Custom\MultiGen Slides.ad
+File12=N,N,Base\Custom\adc.ad 
+File13=N,N,Base\Custom\acroslid.ad
+File14=N,N,Base\Custom\Season's Greetings.ad
+File15=N,N,Base\Custom\multigen.ad
+File16=N,N,Base\multigen.ad
+File17=N,N,Base\Custom\referenc.jpg
+File18=N,N,Base\Custom\image01.jpg
+File19=N,N,Base\Custom\image02.jpg
+File20=N,N,Base\Custom\image03.jpg
+File21=N,N,Base\Custom\image04.jpg
+File22=N,N,Base\Custom\image05.jpg
+File23=N,N,Base\Custom\image06.jpg
+File24=N,N,Base\Custom\image07.jpg
+File25=N,N,Base\Custom\image08.jpg
+File26=N,N,Base\Custom\image09.jpg
+File27=N,N,Base\Custom\image10.jpg
+File28=N,N,Base\Custom\image11.jpg
+File29=N,N,Base\Custom\image12.jpg
+File30=N,N,Base\Custom\Folder.001
+File31=N,N,Base\Custom\Folder.002
+File32=N,N,Base\Custom\Folder.003
+File33=N,N,Base\acromega.adc
+File34=N,N,Base\multigen.adc
+FolderCount=1
+Folder1=N,Y,Base\multigen
+
+[Black]
+Name=Black & Decker
+Description=The Black & Decker Custom Screen Saver
+FolderCount=1
+Folder1=N,Y,Base\Black & Decker
+
+[Bettmann]
+Name=Bettmann
+Description=The Bettmann Custom Screen Saver
+FolderCount=1
+Folder1=N,Y,Base\Bettmann
+
+[Seasons]
+Name=Season's Greetings
+Description=The Season's Greetings Screen Saver
+FileCount=1
+File1=N,N,Base\Custom\Season's Greeti.ad
+
+[Ghosts]
+Name=Ghosts 
+Description=The Ghosts Screen Saver 
+FileCount=3
+File1=N,N,Base\Ghosts\Ghosts.ad
+File2=N,N,Base\Ghosts\ghstimgs.adc
+File3=N,N,Base\Ghosts\ghstimgs\Ghosts*.jpg
+
+[Global]
+Name=Global Bytes
+Description=The Global Bytes Custom Screen Saver 
+FolderCount=1
+Folder1=N,Y,Base\Global Bytes
+
+[Goines]
+Name=Goines
+Description=The Goines Custom Screen Saver 
+FolderCount=1
+Folder1=N,Y,Base\Goines
+
+[Merck]
+Name=Merck
+Description=The Merck Custom Screen Saver 
+FolderCount=1
+Folder1=N,Y,Base\Merck
+
+[Nycomed]
+Name=Nycomed
+Description=The Nycomed Custom Screen Saver 
+FolderCount=1
+Folder1=N,Y,Base\Nycomed
+
+ [Yamato]
+Name=Yamato
+Description=Yamato Screen Saver 
+FolderCount=1
+Folder1=N,Y,Base\yamato
+
+[Myst]
+Name=Myst
+Description=The Myst Screen Saver
+FolderCount=1
+Folder1=N,Y,Base\Myst
+
+[Starter]
+Name=Starter Edition
+Description=The Starter Edition Screen Savers
+FileCount=16
+File1=N,N,Base\Sony\Flying Toasters.ad
+File2=N,N,Base\Sony\Logo.ad
+File3=N,N,Base\Sony\Mowin' Man.ad
+File4=N,N,Base\Sony\Satori.ad
+File5=N,N,Base\Sony\Bitmaps\adlogo.bmp
+File6=N,N,Base\Sony\Bitmaps\earth.bmp
+File7=N,N,Base\Sony\Bitmaps\Toastvga.bmp
+File8=N,N,Base\Starter\Flying Toasters.ad
+File9=N,N,Base\Starter\Logo.ad
+File10=N,N,Base\Starter\Mowin' Man.ad
+File11=N,N,Base\Starter\Satori.ad
+File12=N,N,Base\Starter\credits.rtf
+File13=N,N,Base\Starter\folder.bmp
+File14=N,N,Base\Starter\Bitmaps\adlogo.bmp
+File15=N,N,Base\Starter\Bitmaps\earth.bmp
+File16=N,N,Base\Starter\Bitmaps\Toastvga.bmp
+FolderCount=2
+Folder1=N,N,Base\Sony
+Folder2=N,N,Base\Starter
+
+;; End of file PREVIOUS.INF
