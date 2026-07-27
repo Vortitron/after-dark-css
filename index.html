@@ -267,14 +267,25 @@
     .dialog .acts { display: flex; justify-content: flex-end; gap: 6px; margin-top: 6px; }
 
     .about {
-      margin-top: 14px;
-      padding-top: 12px;
+      margin-top: 12px;
+      padding-top: 10px;
       border-top: 1px solid var(--shadow);
       box-shadow: inset 0 1px 0 var(--light);
     }
-    .about p { margin: 0 0 8px; max-width: 66ch; }
+    .about > summary {
+      cursor: default;
+      list-style: none;
+      color: #000080;
+      text-decoration: underline;
+      width: fit-content;
+    }
+    .about > summary::-webkit-details-marker { display: none; }
+    .about > summary:focus-visible { outline: 1px dotted var(--ink); outline-offset: 2px; }
+    .about[open] > summary { margin-bottom: 10px; }
+    .about .blurb { max-width: 66ch; }
+    .about p { margin: 0 0 8px; }
     .about p:last-child { margin-bottom: 0; }
-    .key { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 0 10px; font-size: 11px; }
+    .key { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 0 8px; font-size: 11px; }
     .key span { display: flex; align-items: center; gap: 5px; }
     .key i { width: 9px; height: 9px; border: 1px solid var(--shadow); display: block; }
 
@@ -369,27 +380,24 @@
         </div>
       </div>
 
-      <div class="about">
-        <div class="key">
-          <span><i style="background:var(--ripped)"></i> Original artwork, decoded</span>
-          <span><i style="background:var(--css)"></i> Recreated in CSS by other people</span>
+      <details class="about">
+        <summary>About these screen savers&hellip;</summary>
+        <div class="blurb">
+          <div class="key">
+            <span><i style="background:var(--ripped)"></i> Original artwork, decoded</span>
+            <span><i style="background:var(--css)"></i> Recreated in CSS by other people</span>
+          </div>
+          <p>The purple ones are the point: sprites lifted from the <code>.AD</code>
+            modules and decoded with the same routines the savers shipped with, so
+            pixels and palettes are exact. Behaviour follows what each module says
+            about itself &mdash; settings, sounds, and its own description string.
+            See <a href="https://github.com/Vortitron/after-dark-css/blob/gh-pages/tools/README.md">tools/README.md</a>.</p>
+          <p>The teal ones are the fork&rsquo;s CSS-only recreations (no images, no
+            JavaScript). They stay behind the checkbox above.</p>
+          <p><b>Full screen</b> covers this page and stops on a click or key.
+            <b>New tab</b> opens the saver alone; <b>Embed&hellip;</b> gives you the markup.</p>
         </div>
-        <p>The purple ones are the point of this. Their sprites are the real thing
-          &mdash; lifted out of the <code>.AD</code> modules and decoded with the same
-          routines the screensavers themselves shipped with, so the pixels and palettes
-          are exact rather than redrawn. Behaviour comes from what the module says about
-          itself: its settings, its sound effects and, where it has one, its own
-          description string. See
-          <a href="https://github.com/Vortitron/after-dark-css/blob/gh-pages/tools/README.md">tools/README.md</a>
-          for how that is done.</p>
-        <p>The teal ones are the project this is forked from: After Dark imitated with
-          nothing but CSS animations and transforms, no images and no JavaScript. They
-          are other people&rsquo;s work, so they are tucked away behind the checkbox
-          rather than mixed in.</p>
-        <p><b>Full screen</b> runs the saver over this page and stops on a click or a
-          key, the way the original did. <b>New tab</b> opens it on its own, and
-          <b>Embed&hellip;</b> gives you the markup to put it in a page of your own.</p>
-      </div>
+      </details>
     </div>
 
     <div class="footer">
