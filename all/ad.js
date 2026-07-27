@@ -1,15 +1,20 @@
 /**
  * ad.js - plays artwork ripped straight out of the original After Dark modules.
  *
- * tools/adweb.py turns a .AD module into art/<module>/index.json plus one PNG
- * strip per animation. This loads that, hands you a Sequence you can draw
- * frames from, and runs the animation loop. Everything a particular
- * screensaver actually *does* lives in its own file under modules/.
+ * The modules store their art two different ways and there is a tool for each.
+ * tools/adweb.py unpacks the RLE animation in a 4.0 module into numbered PNG
+ * strips; tools/adclassic.py unpacks the plain DIBs in a 3.x one into named
+ * PNGs. Both write art/<module>/index.json, and this reads either:
  *
  *   AfterDark.load('art/marbles').then(function (art) {
- *     var marble = art.sequence(8000);
- *     marble.draw(ctx, frameIndex, x, y);
+ *     art.sequence(8000).draw(ctx, frameIndex, x, y);     // 4.0, animated
  *   });
+ *
+ *   AfterDark.load('art/marbles2').then(function (art) {
+ *     art.bitmap('marbles').drawCell(ctx, 3, 16, x, y);   // 3.x, a still strip
+ *   });
+ *
+ * Everything a particular screensaver actually *does* lives under modules/.
  */
 (function (global) {
   'use strict';
@@ -31,17 +36,54 @@
                   Math.round(cx - f.w / 2), Math.round(cy - f.h / 2), f.w, f.h);
   };
 
+  /* A 3.x module's artwork is a single unanimated DIB. Some are one picture,
+     some are a horizontal strip of equal cells - the ten marbles live in one
+     160x16 bitmap - so drawing takes an optional cell width. */
+  function Bitmap(name, meta, image) {
+    this.name = name;
+    this.image = image;
+    this.width = meta.w;
+    this.height = meta.h;
+  }
+
+  Bitmap.prototype.draw = function (ctx, cx, cy) {
+    ctx.drawImage(this.image, Math.round(cx - this.width / 2),
+                  Math.round(cy - this.height / 2));
+  };
+
+  Bitmap.prototype.cells = function (cellW) {
+    return Math.max(1, Math.floor(this.width / cellW));
+  };
+
+  Bitmap.prototype.drawCell = function (ctx, index, cellW, cx, cy) {
+    var n = this.cells(cellW);
+    var i = ((index % n) + n) % n;
+    ctx.drawImage(this.image, i * cellW, 0, cellW, this.height,
+                  Math.round(cx - cellW / 2), Math.round(cy - this.height / 2),
+                  cellW, this.height);
+  };
+
   function Art(base, manifest, images) {
     this.base = base;
     this.module = manifest.module;
+    this.format = manifest.format || 'rle';
     this.sequences = {};
-    for (var id in manifest.sequences) {
-      this.sequences[id] = new Sequence(id, manifest.sequences[id], images[id]);
+    this.bitmaps = {};
+    var name;
+    for (name in manifest.sequences || {}) {
+      this.sequences[name] = new Sequence(name, manifest.sequences[name], images[name]);
+    }
+    for (name in manifest.bitmaps || {}) {
+      this.bitmaps[name] = new Bitmap(name, manifest.bitmaps[name], images[name]);
     }
   }
 
   Art.prototype.sequence = function (id) {
     return this.sequences[String(id)] || null;
+  };
+
+  Art.prototype.bitmap = function (name) {
+    return this.bitmaps[String(name)] || null;
   };
 
   /** Sequence ids in a range, e.g. ids(8000, 8009) for the ten marble types. */
@@ -69,9 +111,10 @@
       if (!r.ok) { throw new Error('no manifest at ' + base); }
       return r.json();
     }).then(function (manifest) {
-      var ids = Object.keys(manifest.sequences);
+      var parts = manifest.sequences || manifest.bitmaps || {};
+      var ids = Object.keys(parts);
       return Promise.all(ids.map(function (id) {
-        return loadImage(base + '/' + id + '.png');
+        return loadImage(base + '/' + (parts[id].file || id + '.png'));
       })).then(function (loaded) {
         var images = {};
         ids.forEach(function (id, i) { images[id] = loaded[i]; });
@@ -132,5 +175,5 @@
     global.removeEventListener('resize', this._onResize);
   };
 
-  global.AfterDark = { load: load, Screen: Screen, Sequence: Sequence };
+  global.AfterDark = { load: load, Screen: Screen, Sequence: Sequence, Bitmap: Bitmap };
 }(window));

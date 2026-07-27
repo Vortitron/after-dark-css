@@ -12,19 +12,21 @@ What's new is a second track: instead of redrawing the screensavers by eye, read
 
 ## The decoded originals
 
-After Dark 4.0 for Windows ships each screensaver as a `.AD` file, which is just a Windows DLL — 16-bit NE for the older and Twisted modules, 32-bit PE for the 4.0 and 10th-anniversary ones. The sprites, palettes and even the original control-panel settings all live in the resource table.
+After Dark ships each screensaver as a `.AD` file, which is just a Windows DLL — 16-bit NE for the 3.x and Twisted modules, 32-bit PE for the 4.0 and 10th-anniversary ones. The sprites, palettes, sound effects and the original control-panel settings all live in the resource table, and so does the module's own description of itself.
 
-The artwork is RLE-compressed inside a big-endian container Berkeley Systems carried over from the Mac. Rather than guess at the encoding, the opcode table was read out of the engine itself: `RLESequence::DrawFrame` in `ADXPL510.DLL` dispatches on the low nibble of each byte through a jump table at `CODE:0x431014`. Ten opcodes, transcribed in [`tools/adart.py`](tools/adart.py).
+Most of the artwork is RLE-compressed inside a big-endian container Berkeley Systems carried over from the Mac. Rather than guess at the encoding, the opcode table was read out of the engine itself: `RLESequence::DrawFrame` in `ADXPL510.DLL` dispatches on the low nibble of each byte through a jump table at `CODE:0x431014`. Ten opcodes, transcribed in [`tools/adart.py`](tools/adart.py). The rest — the older modules, Marbles among them — keep plain Windows DIBs instead, which [`tools/adclassic.py`](tools/adclassic.py) unpacks.
 
-That turned out to matter, because **every module in the library uses the same format**. One decoder covers all of them:
+Between the two, of the 99 modules here:
 
 | | |
 | --- | --- |
-| Modules with sprite artwork | 38 |
-| Frames decoded | 22,038 |
-| Coverage | 99.9% |
+| Animated RLE artwork | 38 modules, 21,552 frames, 99.9% decoded |
+| Still DIB artwork | 16 modules |
+| No artwork — drawn in code | 45 modules |
 
 The results are checked against the real thing: [`tools/adrun.sh`](tools/adrun.sh) boots the actual `AFTERDAR.SCR` engine headless under Wine and Xvfb, so a module can be recorded running and compared frame for frame.
+
+Behaviour is reconstructed rather than decompiled, but from what the module says about itself: its settings, its class exports, its sound effect names and, in the 3.x modules, a description string that spells out what the thing is meant to do. Flying Toasters', for instance, is the song lyric.
 
 See [tools/README.md](tools/README.md) for the whole pipeline.
 
@@ -35,10 +37,15 @@ index.html          Display Properties, where After Dark for Windows lived
 all/*.html          one page per screensaver
 all/ad.js           loads decoded artwork and runs the animation loop
 all/modules/*.js    what each screensaver actually does
-all/art/<module>/   sprite strips + index.json, from tools/adweb.py
+all/art/<module>/   artwork + index.json, from tools/adweb.py or adclassic.py
 tools/              extraction, decoding, emulation
 AD40/               the original modules
 ```
+
+Two modules called Marbles turn up, and they are different screensavers. The
+one people remember — small marbles dropping through a field of pins and
+stacking at the bottom — is `MARBLES2.AD` from 1992. After Dark 4.0 shipped a
+new `MARBLES.AD` that just drifts big rendered marbles around. Both are here.
 
 The CSS screensavers are self-contained pages and open straight from disk. The decoded ones fetch their artwork, so they need serving over HTTP — `python3 -m http.server` from the repo root is enough.
 

@@ -1,0 +1,36 @@
+{
+ "module": "MARBLES2",
+ "format": "dib",
+ "bitmaps": {
+  "marbles": {
+   "w": 160,
+   "h": 16,
+   "id": 1,
+   "file": "marbles.png"
+  },
+  "100": {
+   "w": 16,
+   "h": 16,
+   "id": 100,
+   "file": "100.png"
+  },
+  "101": {
+   "w": 32,
+   "h": 32,
+   "id": 101,
+   "file": "101.png"
+  },
+  "102": {
+   "w": 48,
+   "h": 48,
+   "id": 102,
+   "file": "102.png"
+  }
+ },
+ "text": [
+  "ystems Inc.",
+  "Marbles",
+  "oasters",
+  "MARBLES simulates colorful spheres bouncing through an obstacle course of pins and magically stacking at the bottom. As with people, some marbles are more sensitive than others.\r\n\r\nWindows version by Mike Overlin, SAPIEN Technologies, Inc.\r\n\r\nConcept and Mac version by Kevin McLeod.\r\n\r\nArtwork by Igor Gasowski."
+ ]
+}

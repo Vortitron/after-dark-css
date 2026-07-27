@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flying Toasters Screensaver | After Dark in the Browser</title>
+  <meta name="description" content="After Dark's Flying Toasters, running in the browser with the artwork decoded out of the original TOAST3.AD module.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../img/favicon.png" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    html, body { height: 100%; }
+    body { background: #000; margin: 0; overflow: hidden; }
+
+    after-dark-toasters {
+      position: absolute;
+      inset: 0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="visuallyhidden">Flying Toasters Screensaver - After Dark in the Browser</h1>
+
+  <!-- objects: squadron / air wing / swarm, as the original control panel put it. -->
+  <after-dark-toasters art="art/toast3" objects="air wing"></after-dark-toasters>
+
+  <script src="ad.js"></script>
+  <script src="modules/toasters.js"></script>
+</body>
+</html>

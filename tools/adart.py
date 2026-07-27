@@ -187,13 +187,20 @@ def sequences(path):
             if not chunks:
                 continue
             hdr = by.get(hdr_t, {}).get(rid)
-            sw = sh = 0
+            sw = sh = variants = nframes = 0
             if hdr and len(hdr) >= 50:
-                sw, sh = struct.unpack_from("<2H", hdr, 40)
+                sw, sh, variants, _ncolours, nframes = struct.unpack_from("<5H", hdr, 40)
             dims = [struct.unpack_from(">I", p, 8)[0]
                     for t, p in chunks if t == b"IHDR" and len(p) >= 12]
             dims = [(v & 0xFFFF, v >> 16) for v in dims]
             cstm = [p for t, p in chunks if t == b"CSTM"]
+
+            # A few of the 3.x modules ship each frame twice, once for 256
+            # colour displays and once for 16, interleaved and with a CTAB
+            # each. There is one IHDR per frame either way. Take the first of
+            # every group, which is the deep one; the shallow copy is dithered.
+            if variants > 1 and len(cstm) == nframes * variants:
+                cstm = cstm[::variants]
 
             frames = []
             for i, payload in enumerate(cstm):

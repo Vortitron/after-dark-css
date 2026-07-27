@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Marbles Screensaver | After Dark in CSS</title>
-  <meta name="description" content="After Dark's Marbles screensaver, running in the browser with the artwork decoded out of the original MARBLES.AD module.">
+  <title>Marbles Screensaver | After Dark in the Browser</title>
+  <meta name="description" content="After Dark's Marbles screensaver, running in the browser with the artwork decoded out of the original 1992 MARBLES2.AD module.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" href="../img/favicon.png" />
   <link rel="stylesheet" href="base.css" />
@@ -19,11 +19,12 @@
   </style>
 </head>
 <body>
-  <h1 class="visuallyhidden">Marbles Screensaver - After Dark in CSS</h1>
+  <h1 class="visuallyhidden">Marbles Screensaver - After Dark in the Browser</h1>
 
-  <!-- count: a few / a pouch full / a jar full / a box full, as the original
-       control panel offered. pattern: 1-8, the peg layouts. -->
-  <after-dark-marbles art="art/marbles" count="a jar full"></after-dark-marbles>
+  <!-- The original control panel's settings, by their own names:
+       pins: none / few / many / lots     pin-size: x-small / medium / big
+       speed: slow / medium / fast -->
+  <after-dark-marbles art="art/marbles2" pins="many" pin-size="medium" speed="medium"></after-dark-marbles>
 
   <script src="ad.js"></script>
   <script src="modules/marbles.js"></script>

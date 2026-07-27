@@ -1,6 +1,6 @@
 # After Dark pipeline
 
-Four tools that turn the original screensaver modules in `../AD40/` into
+Five tools that turn the original screensaver modules in `../AD40/` into
 something a browser can use. They only need Python 3 + Pillow, except
 `adrun.sh`, which needs a 32-bit Wine.
 
@@ -8,8 +8,12 @@ something a browser can use. They only need Python 3 + Pillow, except
 AD40/**/*.AD  ──adextract.py──▶  raw resources
               ──adart.py─────▶  decoded sprite sheets (PNG)
               ──adweb.py─────▶  all/art/<module>/  (strips + index.json)
+              ──adclassic.py─▶  all/art/<module>/  (the 3.x modules, see below)
               ──adrun.sh─────▶  the real thing running under Wine (reference)
 ```
+
+There are two artwork formats, and which one a module uses does not follow from
+whether it is 16-bit or 32-bit. Run both tools and see which bites.
 
 ## adextract.py — resources
 
@@ -26,20 +30,42 @@ python3 tools/adextract.py 'AD40/AD10th/*.AD' -o extracted/
 is where the option names ("A Few / A Pouch Full / A Jar Full / A Box Full")
 come from.
 
-## adart.py — artwork
+## adart.py — animated artwork
 
-Every module in the library, both formats, stores animation in the same
-big-endian container Berkeley Systems carried over from the Mac, compressed
-with an RLE whose opcode table is transcribed in the file's docstring — it was
-read out of `ADXPL510.DLL`'s jump table at `CODE:0x431014` rather than guessed.
+Most modules store animation in a big-endian container Berkeley Systems carried
+over from the Mac, compressed with an RLE whose opcode table is transcribed in
+the file's docstring — it was read out of `ADXPL510.DLL`'s jump table at
+`CODE:0x431014` rather than guessed.
 
 ```sh
 python3 tools/adart.py 'AD40/AD10th/*.AD' --check      # coverage report
 python3 tools/adart.py AD40/AD10th/BUNGEE.AD -o sprites/
 ```
 
-22,038 frames across 38 modules decode; the sprite sheets match frame-for-frame
+21,552 frames across 38 modules decode; the sprite sheets match frame-for-frame
 against captures of the modules running for real.
+
+One wrinkle worth knowing about: the word at offset 44 of the sequence header
+is how many colour depths the sequence ships. 37 sequences, all in 3.x modules,
+have **two** — a 256-colour frame and a dithered 16-colour one, interleaved,
+with a `CTAB` each. Decoding all of them and colouring the lot from the first
+`CTAB` gives an animation that alternates between the right art and a green
+mess. Take every *n*th chunk; the first of each group is the deep one.
+
+## adclassic.py — the 3.x still artwork
+
+The older modules mostly skip the RLE container and keep plain Windows DIBs in
+resource type `0x7005`, with a directory in type 15 naming them. Marbles is one
+of these: one 160x16 bitmap holding ten marbles, a 1-bit mask, and the pin at
+three sizes.
+
+```sh
+python3 tools/adclassic.py 'AD40/CLASSIC/*.AD' --list
+python3 tools/adclassic.py AD40/CLASSIC/MARBLES2.AD -o all/art/marbles2
+```
+
+Transparency comes from the mask where the directory names one (`MMARBLE`
+masks `MARBLES`), and from palette index 0 otherwise.
 
 ## adweb.py — web assets
 
@@ -47,8 +73,23 @@ against captures of the modules running for real.
 python3 tools/adweb.py AD40/AD10th/MARBLES.AD -o all/art/
 ```
 
-Writes one horizontal strip per animation plus `index.json`. `all/ad.js` loads
-that; a per-module behaviour file under `all/modules/` decides what moves.
+Writes one horizontal strip per animation plus `index.json`. `all/ad.js` reads
+either tool's `index.json`; a per-module behaviour file under `all/modules/`
+decides what moves.
+
+## What is actually in there
+
+Of the 99 distinct modules across `AD40/`, `AD10th/` and `CLASSIC/`:
+
+| | |
+| --- | --- |
+| Animated RLE artwork | 38 modules |
+| Still DIB artwork | 16 modules |
+| No artwork at all | 45 modules |
+
+That last group is not a gap in the tools. `WARP`, `SPIRAL`, `MANDELBR`,
+`GLOBE`, `GRAVITY`, `STARRYNI` and the rest draw themselves with code, so
+porting one means writing the drawing, not extracting it.
 
 ## adrun.sh — running the originals
 

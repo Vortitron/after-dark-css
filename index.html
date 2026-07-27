@@ -194,6 +194,20 @@
     .listbox .tag { font-size: 10px; opacity: .7; }
     .listbox button[aria-current="true"] .tag { opacity: .85; }
 
+    .check { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+    .check input {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 13px; height: 13px; margin: 0; flex: none;
+      background: var(--field);
+      border: 2px solid;
+      border-color: var(--shadow) var(--light) var(--light) var(--shadow);
+      display: grid;
+      place-items: center;
+    }
+    .check input:checked::after { content: "\2714"; font-size: 10px; line-height: 1; }
+    .check input:focus-visible { outline: 1px dotted var(--ink); outline-offset: 2px; }
+
     .buttons { display: flex; flex-direction: column; gap: 6px; flex: 0 0 auto; padding-top: 20px; }
     .push {
       min-width: 98px;
@@ -299,6 +313,9 @@
         <div class="field">
           <span class="cap">Screen Saver</span>
           <div class="listbox" id="list" role="listbox" aria-label="Screen savers"></div>
+          <label class="check">
+            <input type="checkbox" id="showcss"> Show the CSS recreations too
+          </label>
         </div>
         <div class="buttons">
           <button class="push" id="full" disabled>Full screen</button>
@@ -309,17 +326,21 @@
 
       <div class="about">
         <div class="key">
-          <span><i style="background:var(--css)"></i> Recreated in CSS</span>
           <span><i style="background:var(--ripped)"></i> Original artwork, decoded</span>
+          <span><i style="background:var(--css)"></i> Recreated in CSS by other people</span>
         </div>
-        <p>The teal ones are the original project: After Dark screensavers imitated
-          with nothing but CSS animations and transforms.</p>
-        <p>The purple ones are new. Their sprites are the real thing &mdash; lifted out
-          of the <code>.AD</code> modules from After Dark 4.0 for Windows and decompressed
-          with the same RLE decoder the screensavers themselves shipped with, so the
-          pixels and palettes are exact rather than redrawn. See
+        <p>The purple ones are the point of this. Their sprites are the real thing
+          &mdash; lifted out of the <code>.AD</code> modules and decoded with the same
+          routines the screensavers themselves shipped with, so the pixels and palettes
+          are exact rather than redrawn. Behaviour comes from what the module says about
+          itself: its settings, its sound effects and, where it has one, its own
+          description string. See
           <a href="https://github.com/Vortitron/after-dark-css/blob/gh-pages/tools/README.md">tools/README.md</a>
           for how that is done.</p>
+        <p>The teal ones are the project this is forked from: After Dark imitated with
+          nothing but CSS animations and transforms, no images and no JavaScript. They
+          are other people&rsquo;s work, so they are tucked away behind the checkbox
+          rather than mixed in.</p>
       </div>
     </div>
 
@@ -340,8 +361,9 @@
 
   <script>
     var SAVERS = [
-      { name: 'Marbles',         file: 'all/marbles.html',         kind: 'ripped', tag: 'MARBLES.AD' },
-      { name: 'Marble Jar',      file: 'all/marble-jar.html',      kind: 'ripped', tag: 'data-driven' },
+      { name: 'Flying Toasters', file: 'all/toasters.html',         kind: 'ripped', tag: 'TOAST3.AD 1992' },
+      { name: 'Marbles',         file: 'all/marbles.html',         kind: 'ripped', tag: 'MARBLES2.AD 1992' },
+      { name: 'Marbles',         file: 'all/marbles-40.html',      kind: 'ripped', tag: 'MARBLES.AD 4.0' },
       { name: 'Flying Toasters', file: 'all/flying-toasters.html', kind: 'css' },
       { name: 'Fish',            file: 'all/fish.html',            kind: 'css' },
       { name: 'Globe',           file: 'all/globe.html',           kind: 'css' },
@@ -361,19 +383,9 @@
     var off = document.getElementById('off');
     var full = document.getElementById('full');
     var again = document.getElementById('again');
+    var showcss = document.getElementById('showcss');
+    var shown = [];
     var current = null;
-
-    SAVERS.forEach(function (saver, i) {
-      var b = document.createElement('button');
-      b.className = saver.kind;
-      b.setAttribute('role', 'option');
-      b.setAttribute('aria-current', 'false');
-      b.appendChild(el('span', 'dot'));
-      b.appendChild(el('span', 'name', saver.name));
-      if (saver.tag) { b.appendChild(el('span', 'tag', saver.tag)); }
-      b.onclick = function () { select(i); };
-      list.appendChild(b);
-    });
 
     function el(tag, cls, text) {
       var n = document.createElement(tag);
@@ -382,8 +394,24 @@
       return n;
     }
 
+    function render() {
+      shown = SAVERS.filter(function (s) { return showcss.checked || s.kind !== 'css'; });
+      list.textContent = '';
+      shown.forEach(function (saver, i) {
+        var b = document.createElement('button');
+        b.className = saver.kind;
+        b.setAttribute('role', 'option');
+        b.setAttribute('aria-current', String(saver === current));
+        b.appendChild(el('span', 'dot'));
+        b.appendChild(el('span', 'name', saver.name));
+        if (saver.tag) { b.appendChild(el('span', 'tag', saver.tag)); }
+        b.onclick = function () { select(i); };
+        list.appendChild(b);
+      });
+    }
+
     function select(i) {
-      current = SAVERS[i];
+      current = shown[i];
       Array.prototype.forEach.call(list.children, function (node, j) {
         node.setAttribute('aria-current', j === i ? 'true' : 'false');
       });
@@ -413,9 +441,10 @@
     document.getElementById('apply').onclick = openFull;
     document.getElementById('cancel').onclick = clearScreen;
     document.getElementById('random').onclick = function () {
-      select(Math.floor(Math.random() * SAVERS.length));
+      select(Math.floor(Math.random() * shown.length));
     };
     again.onclick = function () { if (current) { glass.src = current.file; } };
+    showcss.onchange = render;
 
     function tick() {
       var d = new Date();
@@ -428,6 +457,7 @@
     tick();
     setInterval(tick, 20000);
 
+    render();
     select(0);
   </script>
 </body>
