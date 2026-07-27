@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Marbles Screensaver | After Dark in CSS</title>
+  <meta name="description" content="A data-driven remake of After Dark's Marbles screensaver. Ping it to drop a labelled marble; set a total and watch the pile fill the screen.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../img/favicon.png" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    body { background: #0a0a0f; }
+
+    marble-jar {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Small on-screen control strip. Hide it and this becomes a pure
+       screensaver driven entirely by your data / pings. */
+    .controls {
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(20, 20, 28, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      color: #eee;
+      font-size: 13px;
+      z-index: 2;
+      backdrop-filter: blur(6px);
+    }
+    .controls button {
+      font-family: inherit;
+      font-size: 13px;
+      color: #0a0a0f;
+      background: #ffd23f;
+      border: 0;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .controls button.ghost { background: rgba(255,255,255,0.12); color: #eee; }
+    .controls input {
+      width: 44px;
+      font-family: inherit;
+      background: rgba(255,255,255,0.1);
+      color: #eee;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 6px;
+      padding: 5px 6px;
+    }
+    .controls .count { font-variant-numeric: tabular-nums; opacity: 0.85; }
+  </style>
+</head>
+<body>
+  <h1 class="visuallyhidden">Marbles Screensaver - After Dark in CSS</h1>
+
+  <marble-jar id="jar" total="120"></marble-jar>
+
+  <div class="controls">
+    <button id="dropOne">Drop marble</button>
+    <button id="autofill" class="ghost">Auto-fill</button>
+    <button id="reset" class="ghost">Reset</button>
+    <label>total <input id="total" type="number" min="1" value="120"></label>
+    <span class="count"><span id="c">0</span> / <span id="t">120</span></span>
+  </div>
+
+  <script src="marble-jar.js"></script>
+  <script>
+    var jar = document.getElementById('jar');
+    var cEl = document.getElementById('c');
+    var tEl = document.getElementById('t');
+    var totalInput = document.getElementById('total');
+    var timer = null;
+
+    // A demo pool of "initials" — swap for your real data source.
+    var pool = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    function ping() {
+      var initial = pool[Math.floor(Math.random() * pool.length)];
+      jar.drop({ initial: initial });   // ← this is the "ping"
+    }
+
+    document.getElementById('dropOne').onclick = ping;
+
+    document.getElementById('reset').onclick = function () {
+      jar.reset();
+      if (timer) { clearInterval(timer); timer = null; }
+    };
+
+    document.getElementById('autofill').onclick = function () {
+      if (timer) { clearInterval(timer); timer = null; return; }
+      timer = setInterval(function () {
+        if (jar.count >= jar.total) { clearInterval(timer); timer = null; return; }
+        ping();
+      }, 90);
+    };
+
+    totalInput.oninput = function () {
+      var n = parseInt(totalInput.value, 10);
+      if (n > 0) { jar.total = n; tEl.textContent = n; }
+    };
+
+    // Keep the on-screen counter in sync.
+    setInterval(function () { cEl.textContent = jar.count; }, 100);
+    jar.addEventListener('marble:full', function () {
+      if (timer) { clearInterval(timer); timer = null; }
+    });
+  </script>
+</body>
+</html>

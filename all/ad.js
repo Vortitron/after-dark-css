@@ -1,0 +1,136 @@
+/**
+ * ad.js - plays artwork ripped straight out of the original After Dark modules.
+ *
+ * tools/adweb.py turns a .AD module into art/<module>/index.json plus one PNG
+ * strip per animation. This loads that, hands you a Sequence you can draw
+ * frames from, and runs the animation loop. Everything a particular
+ * screensaver actually *does* lives in its own file under modules/.
+ *
+ *   AfterDark.load('art/marbles').then(function (art) {
+ *     var marble = art.sequence(8000);
+ *     marble.draw(ctx, frameIndex, x, y);
+ *   });
+ */
+(function (global) {
+  'use strict';
+
+  function Sequence(id, meta, image) {
+    this.id = id;
+    this.image = image;
+    this.frames = meta.frames;
+    this.count = meta.count;
+    this.width = meta.w;
+    this.height = meta.h;
+  }
+
+  /* Frames carry their own tight bounding box, so centre each one on the
+     sequence's nominal size rather than assuming they all match. */
+  Sequence.prototype.draw = function (ctx, index, cx, cy) {
+    var f = this.frames[((index % this.count) + this.count) % this.count];
+    ctx.drawImage(this.image, f.x, f.y, f.w, f.h,
+                  Math.round(cx - f.w / 2), Math.round(cy - f.h / 2), f.w, f.h);
+  };
+
+  function Art(base, manifest, images) {
+    this.base = base;
+    this.module = manifest.module;
+    this.sequences = {};
+    for (var id in manifest.sequences) {
+      this.sequences[id] = new Sequence(id, manifest.sequences[id], images[id]);
+    }
+  }
+
+  Art.prototype.sequence = function (id) {
+    return this.sequences[String(id)] || null;
+  };
+
+  /** Sequence ids in a range, e.g. ids(8000, 8009) for the ten marble types. */
+  Art.prototype.ids = function (from, to) {
+    var out = [];
+    for (var id in this.sequences) {
+      var n = Number(id);
+      if (n >= from && n <= to) { out.push(n); }
+    }
+    return out.sort(function (a, b) { return a - b; });
+  };
+
+  function loadImage(src) {
+    return new Promise(function (resolve, reject) {
+      var im = new Image();
+      im.onload = function () { resolve(im); };
+      im.onerror = function () { reject(new Error('could not load ' + src)); };
+      im.src = src;
+    });
+  }
+
+  function load(base) {
+    base = base.replace(/\/$/, '');
+    return fetch(base + '/index.json').then(function (r) {
+      if (!r.ok) { throw new Error('no manifest at ' + base); }
+      return r.json();
+    }).then(function (manifest) {
+      var ids = Object.keys(manifest.sequences);
+      return Promise.all(ids.map(function (id) {
+        return loadImage(base + '/' + id + '.png');
+      })).then(function (loaded) {
+        var images = {};
+        ids.forEach(function (id, i) { images[id] = loaded[i]; });
+        return new Art(base, manifest, images);
+      });
+    });
+  }
+
+  /**
+   * Canvas that fills its host element, keeps up with device pixel ratio and
+   * calls back once per frame with the elapsed seconds.
+   */
+  function Screen(host) {
+    this.host = host;
+    this.canvas = document.createElement('canvas');
+    this.canvas.style.display = 'block';
+    this.canvas.style.width = '100%';
+    this.canvas.style.height = '100%';
+    host.appendChild(this.canvas);
+    this.ctx = this.canvas.getContext('2d');
+    this.ctx.imageSmoothingEnabled = false;
+    this.width = 0;
+    this.height = 0;
+    this._raf = 0;
+    this.resize();
+
+    var self = this;
+    this._onResize = function () { self.resize(); };
+    global.addEventListener('resize', this._onResize);
+  }
+
+  Screen.prototype.resize = function () {
+    var dpr = global.devicePixelRatio || 1;
+    var r = this.host.getBoundingClientRect();
+    this.width = Math.max(1, Math.round(r.width));
+    this.height = Math.max(1, Math.round(r.height));
+    this.canvas.width = Math.round(this.width * dpr);
+    this.canvas.height = Math.round(this.height * dpr);
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.ctx.imageSmoothingEnabled = false;
+    if (this.onresize) { this.onresize(this.width, this.height); }
+  };
+
+  Screen.prototype.run = function (step) {
+    var self = this;
+    var last = 0;
+    function tick(now) {
+      var dt = last ? Math.min((now - last) / 1000, 0.05) : 0;
+      last = now;
+      step(dt, self.ctx, self.width, self.height);
+      self._raf = global.requestAnimationFrame(tick);
+    }
+    this._raf = global.requestAnimationFrame(tick);
+  };
+
+  Screen.prototype.stop = function () {
+    if (this._raf) { global.cancelAnimationFrame(this._raf); this._raf = 0; }
+    global.removeEventListener('resize', this._onResize);
+  };
+
+  global.AfterDark = { load: load, Screen: Screen, Sequence: Sequence };
+}(window));
