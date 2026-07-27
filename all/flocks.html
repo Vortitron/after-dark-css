@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flocks Screensaver | After Dark in the Browser</title>
+  <meta name="description" content="After Dark's Flocks, running in the browser with the artwork decoded out of the original FLOCKS.AD module and Craig Reynolds' boids for the behaviour.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../img/favicon.png" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    html, body { height: 100%; }
+    body { background: #000; margin: 0; overflow: hidden; }
+
+    after-dark-flocks {
+      position: absolute;
+      inset: 0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="visuallyhidden">Flocks Screensaver - After Dark in the Browser</h1>
+
+  <!-- kind: birds / polliwogs / gnats / paparazzi / atoms / copters / dots,
+       the seven flocks the module ships. size: small / medium / large. -->
+  <after-dark-flocks art="art/flocks" kind="birds" size="medium"></after-dark-flocks>
+
+  <script src="ad.js"></script>
+  <script src="modules/flocks.js"></script>
+</body>
+</html>

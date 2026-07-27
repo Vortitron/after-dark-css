@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Aquatic Realm Screensaver | After Dark in the Browser</title>
+  <meta name="description" content="After Dark's Aquatic Realm, running in the browser with the artwork decoded out of the original Aqua.ad module.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../img/favicon.png" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    html, body { height: 100%; }
+    body { background: #000; margin: 0; overflow: hidden; }
+
+    after-dark-aqua {
+      position: absolute;
+      inset: 0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="visuallyhidden">Aquatic Realm Screensaver - After Dark in the Browser</h1>
+
+  <!-- creatures and seaweed are counts, as the original control panel had them.
+       sea-floor is the "Show Sea Floor" checkbox, which the module itself warns
+       makes it "much more interesting, but a little less of a screen saver". -->
+  <after-dark-aqua art="art/aqua" creatures="14" seaweed="6"></after-dark-aqua>
+
+  <script src="ad.js"></script>
+  <script src="modules/aqua.js"></script>
+</body>
+</html>

@@ -46,9 +46,20 @@
     this.height = meta.h;
   }
 
-  Bitmap.prototype.draw = function (ctx, cx, cy) {
-    ctx.drawImage(this.image, Math.round(cx - this.width / 2),
-                  Math.round(cy - this.height / 2));
+  /* Several modules draw their creatures facing one way only and mirror them
+     for the other, so drawing takes an optional flip. */
+  Bitmap.prototype.draw = function (ctx, cx, cy, flip) {
+    var x = Math.round(cx - this.width / 2);
+    var y = Math.round(cy - this.height / 2);
+    if (!flip) {
+      ctx.drawImage(this.image, x, y);
+      return;
+    }
+    ctx.save();
+    ctx.translate(Math.round(cx), 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(this.image, Math.round(-this.width / 2), y);
+    ctx.restore();
   };
 
   Bitmap.prototype.cells = function (cellW) {

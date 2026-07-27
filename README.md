@@ -26,7 +26,9 @@ Between the two, of the 99 modules here:
 
 The results are checked against the real thing: [`tools/adrun.sh`](tools/adrun.sh) boots the actual `AFTERDAR.SCR` engine headless under Wine and Xvfb, so a module can be recorded running and compared frame for frame.
 
-Behaviour is reconstructed rather than decompiled, but from what the module says about itself: its settings, its class exports, its sound effect names and, in the 3.x modules, a description string that spells out what the thing is meant to do. Flying Toasters', for instance, is the song lyric.
+Behaviour is reconstructed rather than decompiled, but from what the module says about itself: its settings, its class exports, its sound effect names and, in the 3.x modules, a description string that spells out what the thing is meant to do. Flocks names the Reynolds paper it implements; Flying Toasters' is the song lyric.
+
+Having the artwork is not the same as being able to rebuild the module, though. Where each bitmap is a whole thing that moves on its own — a marble, a toaster, a gull, a fish — the module's settings supply the rest and it goes quickly. Where the sprites are parts that the original code composed into a character or a scene, the layout was never in the resource table, and rebuilding it means watching the original run. See [tools/README.md](tools/README.md#what-is-actually-in-there).
 
 See [tools/README.md](tools/README.md) for the whole pipeline.
 

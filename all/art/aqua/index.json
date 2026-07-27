@@ -1,0 +1,251 @@
+{
+ "module": "Aqua",
+ "format": "dib",
+ "bitmaps": {
+  "1000": {
+   "w": 64,
+   "h": 64,
+   "id": 1000,
+   "file": "1000.png"
+  },
+  "1100": {
+   "w": 64,
+   "h": 64,
+   "id": 1100,
+   "file": "1100.png"
+  },
+  "1001": {
+   "w": 64,
+   "h": 64,
+   "id": 1001,
+   "file": "1001.png"
+  },
+  "1101": {
+   "w": 64,
+   "h": 64,
+   "id": 1101,
+   "file": "1101.png"
+  },
+  "1002": {
+   "w": 64,
+   "h": 64,
+   "id": 1002,
+   "file": "1002.png"
+  },
+  "1102": {
+   "w": 64,
+   "h": 64,
+   "id": 1102,
+   "file": "1102.png"
+  },
+  "1003": {
+   "w": 64,
+   "h": 64,
+   "id": 1003,
+   "file": "1003.png"
+  },
+  "1103": {
+   "w": 64,
+   "h": 64,
+   "id": 1103,
+   "file": "1103.png"
+  },
+  "1004": {
+   "w": 64,
+   "h": 64,
+   "id": 1004,
+   "file": "1004.png"
+  },
+  "1104": {
+   "w": 64,
+   "h": 64,
+   "id": 1104,
+   "file": "1104.png"
+  },
+  "1005": {
+   "w": 64,
+   "h": 64,
+   "id": 1005,
+   "file": "1005.png"
+  },
+  "1105": {
+   "w": 64,
+   "h": 64,
+   "id": 1105,
+   "file": "1105.png"
+  },
+  "1006": {
+   "w": 64,
+   "h": 64,
+   "id": 1006,
+   "file": "1006.png"
+  },
+  "1106": {
+   "w": 64,
+   "h": 64,
+   "id": 1106,
+   "file": "1106.png"
+  },
+  "1007": {
+   "w": 64,
+   "h": 64,
+   "id": 1007,
+   "file": "1007.png"
+  },
+  "1107": {
+   "w": 64,
+   "h": 64,
+   "id": 1107,
+   "file": "1107.png"
+  },
+  "1008": {
+   "w": 64,
+   "h": 64,
+   "id": 1008,
+   "file": "1008.png"
+  },
+  "1108": {
+   "w": 64,
+   "h": 64,
+   "id": 1108,
+   "file": "1108.png"
+  },
+  "1009": {
+   "w": 64,
+   "h": 64,
+   "id": 1009,
+   "file": "1009.png"
+  },
+  "1109": {
+   "w": 64,
+   "h": 64,
+   "id": 1109,
+   "file": "1109.png"
+  },
+  "1010": {
+   "w": 64,
+   "h": 64,
+   "id": 1010,
+   "file": "1010.png"
+  },
+  "1110": {
+   "w": 64,
+   "h": 64,
+   "id": 1110,
+   "file": "1110.png"
+  },
+  "1011": {
+   "w": 64,
+   "h": 64,
+   "id": 1011,
+   "file": "1011.png"
+  },
+  "1111": {
+   "w": 64,
+   "h": 64,
+   "id": 1111,
+   "file": "1111.png"
+  },
+  "1012": {
+   "w": 32,
+   "h": 32,
+   "id": 1012,
+   "file": "1012.png"
+  },
+  "1112": {
+   "w": 32,
+   "h": 32,
+   "id": 1112,
+   "file": "1112.png"
+  },
+  "1013": {
+   "w": 64,
+   "h": 64,
+   "id": 1013,
+   "file": "1013.png"
+  },
+  "1113": {
+   "w": 64,
+   "h": 64,
+   "id": 1113,
+   "file": "1113.png"
+  },
+  "1014": {
+   "w": 64,
+   "h": 64,
+   "id": 1014,
+   "file": "1014.png"
+  },
+  "1114": {
+   "w": 64,
+   "h": 64,
+   "id": 1114,
+   "file": "1114.png"
+  },
+  "1015": {
+   "w": 64,
+   "h": 64,
+   "id": 1015,
+   "file": "1015.png"
+  },
+  "1115": {
+   "w": 64,
+   "h": 64,
+   "id": 1115,
+   "file": "1115.png"
+  },
+  "1016": {
+   "w": 64,
+   "h": 64,
+   "id": 1016,
+   "file": "1016.png"
+  },
+  "1116": {
+   "w": 64,
+   "h": 64,
+   "id": 1116,
+   "file": "1116.png"
+  },
+  "1017": {
+   "w": 64,
+   "h": 64,
+   "id": 1017,
+   "file": "1017.png"
+  },
+  "1117": {
+   "w": 64,
+   "h": 64,
+   "id": 1117,
+   "file": "1117.png"
+  },
+  "1018": {
+   "w": 64,
+   "h": 64,
+   "id": 1018,
+   "file": "1018.png"
+  },
+  "1118": {
+   "w": 64,
+   "h": 64,
+   "id": 1118,
+   "file": "1118.png"
+  },
+  "900": {
+   "w": 192,
+   "h": 64,
+   "id": 900,
+   "file": "900.png"
+  },
+  "1900": {
+   "w": 192,
+   "h": 64,
+   "id": 1900,
+   "file": "1900.png"
+  }
+ },
+ "text": [
+  "s Inc.",
+  "Aquatic Realm",
+  "AQUATIC REALM (tm) turns your monitor into a lively undersea environment featuring many colorful marine creatures.\r\n\r\nOriginal concept from Fish! by Tom & Ed's Bogus Software.\r\n\r\nChecking \"Show Sea Floor\" makes this module much more interesting, but a little less of a screen saver.\r\n\r\nTo hear the watery sounds, use the sound control (if sound capability is available).\r\n\r\nRealistic fish artwork by Tomoya Ikeda and Igor Gasowski.\r\n\r\nSound by Rob Gale."
+ ]
+}

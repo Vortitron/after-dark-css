@@ -62,10 +62,21 @@ three sizes.
 ```sh
 python3 tools/adclassic.py 'AD40/CLASSIC/*.AD' --list
 python3 tools/adclassic.py AD40/CLASSIC/MARBLES2.AD -o all/art/marbles2
+python3 tools/adclassic.py AD40/AD10th/Aqua.ad -o all/art/aqua --ids 900,1000-1118,1900
 ```
 
-Transparency comes from the mask where the directory names one (`MMARBLE`
-masks `MARBLES`), and from palette index 0 otherwise.
+Which resource type holds the bitmaps is not consistent — `0x7005`, a type
+literally named `DIB`, or `MICT`/`QICT`/`SICT` split by size — so the tool
+sniffs for the `BM` signature rather than trusting the type.
+
+Transparency comes from the mask where the directory names one (`MMARBLE` masks
+`MARBLES`), and otherwise from whichever palette index runs round the edge of
+the bitmap. That is index 0 in Marbles and index 15 in Flocks, so assuming
+either one leaves half the library with its sprites punched out.
+
+`--ids` is there because several modules ship the same artwork five times over.
+Aquatic Realm has 16-colour art, 256-colour art and three bands of masks, 193
+bitmaps for 19 creatures; only `1000-1118` is worth exporting.
 
 ## adweb.py — web assets
 
@@ -90,6 +101,26 @@ Of the 99 distinct modules across `AD40/`, `AD10th/` and `CLASSIC/`:
 That last group is not a gap in the tools. `WARP`, `SPIRAL`, `MANDELBR`,
 `GLOBE`, `GRAVITY`, `STARRYNI` and the rest draw themselves with code, so
 porting one means writing the drawing, not extracting it.
+
+Having the artwork is not the same as being able to rebuild the module, and the
+line between the two is not where the bitmap count suggests. What decides it is
+whether a sprite is a whole thing that moves on its own:
+
+- **Sprite-per-object.** Marbles, Flying Toasters, Flocks, Aquatic Realm. Each
+  bitmap is a complete marble or bird or fish, the module's settings say how
+  many and how fast, and the rest is motion. These are done.
+- **Composed characters.** Swan Lake keeps bodies (`600-608`), necks
+  (`300-307`) and water reflections (`700-707`) as separate bitmaps that have
+  to be layered at the right offsets. Flying Toilets is a toilet plus a
+  detached pair of wings. The offsets are in the code, not the resources.
+- **Staged scenes.** Confetti Factory has ducks, gears, conveyor belts and two
+  wall styles but no picture of the factory. Bad Dog needs a desktop, Rat Race
+  a track, Bungee Roulette a bridge and a cord. The layout was drawn in code
+  and is simply not recoverable from the resource table.
+
+The second and third groups are still portable, but by watching the original
+run and rebuilding the staging by eye — which is what `adrun.sh` is for, and
+which is blocked for 16-bit modules by the painting problem below.
 
 ## adrun.sh — running the originals
 
