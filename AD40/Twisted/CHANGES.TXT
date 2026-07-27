@@ -1,7 +1,0 @@
-1. In win.ini add <R>adw30.exe<N> to the end of the <B>load=<N> line. In system.ini add 
-   <R>device=adw30.386<N> to the <B>[386Enh]<N> section, <R>adwrap.drv<N> to the <B>drivers<N> 
-   line of the <B>[boot]<N> section, and add the line <R>adwrap=adwrap.drv<N> to the <B>[drivers]<N> 
-   section. If you are upgrading from ADW 2.0, <R>AD-DOS.COM<N> will be removed 
-   from AUTOEXEC.BAT.
-<B>If you are not running Win95 then also:<N>
-2. In config.sys make <B>FILES<N> at least <R>80<N> and <B>BUFFERS<N> at least <R>10<N>.
