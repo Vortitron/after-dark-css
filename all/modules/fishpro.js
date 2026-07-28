@@ -65,6 +65,10 @@
   var FLOOR = '5010', ROCKS = '5000', CORAL = '5020', BUBBLES = '7000';
   var ANEMONES = ['6000', '6010', '6020', '6030'];
 
+  // "Show Sea Floor", the module's own three settings: nothing, the floor and
+  // its scenery standing still, or the anemones opening and the bubbles going.
+  var SEA_FLOOR = ['none', 'static', 'animated'];
+
   var SWIM = 3.5;              // broadside cycle, frames per second
   var PIVOT = 14;              // how fast it goes through the turn
   var ANEMONE = 3;             // anemone open/close, frames per second
@@ -336,7 +340,13 @@
       var fish = (AfterDark.setting(self, 'fish') || 'school').toLowerCase();
       sim.count = COUNTS[fish] || parseInt(fish, 10) || COUNTS.school;
       var floor = AfterDark.setting(self, 'sea-floor');
-      if (floor !== null) { sim.seaFloor = floor.toLowerCase(); }
+      if (floor !== null) {
+        floor = floor.toLowerCase();
+        // A bare sea-floor attribute means show it; anything unrecognised
+        // gets the module's own default rather than silently becoming static.
+        if (floor === '' || floor === 'yes') { floor = 'animated'; }
+        sim.seaFloor = SEA_FLOOR.indexOf(floor) >= 0 ? floor : sim.seaFloor;
+      }
       var only = AfterDark.setting(self, 'select-fish');
       if (only) {
         sim.chosen = only.toLowerCase().split(',').map(function (s) { return s.trim(); });

@@ -529,6 +529,16 @@
       return (saver && saver.js && OPTIONS[saver.js]) || null;
     }
 
+    /* What the saver's own page already sets for an option. That, not the head
+       of the list, is what it does when the URL says nothing - so it is both
+       what the dialog opens on and what counts as unchanged. */
+    function baseValue(saver, o) {
+      var m = new RegExp('(?:^|\\s)' + o.name + '="([^"]*)"').exec(saver.attrs || '');
+      if (m) { return o.check ? m[1] !== 'no' : m[1]; }
+      if (o.check) { return new RegExp('(?:^|\\s)' + o.name + '(?:\\s|$)').test(saver.attrs || '') || Boolean(o.on); }
+      return o.values[0];
+    }
+
     /** The saver's page with its settings on the end, which is how they reach
         it: all/marbles.html?pins=lots&speed=fast. */
     function urlFor(saver) {
@@ -788,7 +798,7 @@
           box.id = id;
           box.checked = chosen[o.name] !== undefined
             ? chosen[o.name] !== 'no'
-            : Boolean(o.on);
+            : baseValue(current, o);
           var lab = el('label', '', o.label);
           lab.setAttribute('for', id);
           wrap.appendChild(box);
@@ -808,7 +818,7 @@
           opt.textContent = v === '' ? (o.blank || 'Default') : title(v);
           sel.appendChild(opt);
         });
-        sel.value = chosen[o.name] !== undefined ? chosen[o.name] : o.values[0];
+        sel.value = chosen[o.name] !== undefined ? chosen[o.name] : baseValue(current, o);
         grid.appendChild(label);
         grid.appendChild(sel);
         fields.push({ o: o, read: function () { return sel.value; } });
@@ -825,8 +835,9 @@
         var out = {};
         fields.forEach(function (f) {
           var v = f.read();
-          // Only carry what differs from what the module does on its own.
-          var base = f.o.check ? (f.o.on ? 'yes' : 'no') : f.o.values[0];
+          // Only carry what differs from what the saver page already does.
+          var base = baseValue(current, f.o);
+          if (f.o.check) { base = base ? 'yes' : 'no'; }
           if (v !== base) { out[f.o.name] = v; }
         });
         picked[current.js] = out;
