@@ -240,5 +240,5 @@
   };
 
   customElements.define('after-dark-marbles-40', MarblesElement);
-  window.AfterDarkMarbles = Marbles;
+  window.AfterDarkMarbles40 = Marbles;
 }());

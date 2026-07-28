@@ -209,7 +209,7 @@
   };
 
   FishPro.prototype.step = function (dt, w, h) {
-    var i, f, spec;
+    var i, f, spec, resort = false;
     for (i = 0; i < this.fish.length; i += 1) {
       f = this.fish[i];
       spec = f.s.spec;
@@ -244,8 +244,14 @@
         if (spec.pivot.length) { f.turning = 1; }
         else { f.speed = -f.speed; f.right = !f.right; }
       }
-      if (f.x < -pad * 2 || f.x > w + pad * 2) { this.fish[i] = this.spawn(w, h, false); }
+      if (f.x < -pad * 2 || f.x > w + pad * 2) {
+        this.fish[i] = this.spawn(w, h, false);
+        resort = true;
+      }
     }
+    // A replacement arrives at a new depth, so the back-to-front order has to
+    // be redone or the tank slowly stops having any.
+    if (resort) { this.sort(); }
 
     for (i = 0; i < this.props.length; i += 1) {
       if (!this.props[i].still && this.seaFloor === 'animated') {
