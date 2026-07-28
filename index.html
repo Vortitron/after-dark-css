@@ -208,6 +208,9 @@
     .check input:checked::after { content: "\2714"; font-size: 10px; line-height: 1; }
     .check input:focus-visible { outline: 1px dotted var(--ink); outline-offset: 2px; }
 
+    .credit { margin: 6px 0 0; font-size: 11px; }
+    .credit a { color: var(--title); }
+
     .buttons { display: flex; flex-direction: column; gap: 6px; flex: 0 0 auto; padding-top: 20px; }
     .push {
       min-width: 98px;
@@ -385,6 +388,9 @@
           <label class="check">
             <input type="checkbox" id="showcss"> Show the CSS recreations too
           </label>
+          <p class="credit" id="credit" hidden>The teal ones are
+            <a href="https://github.com/bryanbraun/after-dark-css">Bryan Braun's</a>,
+            drawn with nothing but CSS &mdash; no images, no JavaScript.</p>
         </div>
         <div class="buttons">
           <button class="push" id="full" disabled>Full screen</button>
@@ -574,6 +580,7 @@
     var opts = document.getElementById('opts');
     var embed = document.getElementById('embed');
     var showcss = document.getElementById('showcss');
+    var credit = document.getElementById('credit');
     var shown = [];
     var current = null;
 
@@ -894,7 +901,10 @@
       select(Math.floor(Math.random() * shown.length));
     };
     again.onclick = function () { if (current) { glass.src = urlFor(current); } };
-    showcss.onchange = render;
+    showcss.onchange = function () {
+      credit.hidden = !showcss.checked;
+      render();
+    };
 
     function tick() {
       var d = new Date();
