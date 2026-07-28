@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bungee Roulette Screensaver | After Dark in the Browser</title>
+  <meta name="description" content="After Dark's Bungee Roulette, running in the browser with the artwork decoded out of the original BUNGEE.AD module.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../img/favicon.png" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    html, body { height: 100%; }
+    body { background: #000; margin: 0; overflow: hidden; }
+
+    after-dark-bungee {
+      position: absolute;
+      inset: 0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="visuallyhidden">Bungee Roulette Screensaver - After Dark in the Browser</h1>
+
+  <!-- jumper is the original's Daredevil / Half Daredevil / Cow / Fish /
+       Half Fish / Random, jumps its One / Few / Many / Droves / Whole Bunches /
+       Hundreds, and equipment its Safe / Reliable / Used / So - So / Purfikt -
+       which is how likely the rope is to let go. -->
+  <after-dark-bungee art="art/bungee" jumper="random" jumps="many" equipment="so - so"></after-dark-bungee>
+
+  <script src="ad.js"></script>
+  <script src="modules/bungee.js"></script>
+</body>
+</html>

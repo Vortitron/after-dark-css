@@ -120,11 +120,20 @@ whether a sprite is a whole thing that moves on its own:
   at the end of `4000` and `6000`, with no body anywhere. The offsets are in
   the code, not the resources.
 - **Staged scenes.** Confetti Factory has ducks, gears, conveyor belts and two
-  wall styles but no picture of the factory. Bad Dog needs a desktop, Rat Race
-  a track, Bungee Roulette a bridge and a cord. The layout was drawn in code
-  and is simply not recoverable from the resource table.
+  wall styles but no picture of the factory. Bad Dog needs a desktop and Rat
+  Race a track. The layout was drawn in code and is simply not recoverable
+  from the resource table.
 
-The second and third groups are still portable, but by watching the original
+Bungee Roulette is the one of these that is done, and it shows what the third
+group costs. All 171 of its frames decode, and they carry more than they look
+like they do: each jumper is the same creature at a run of different lengths,
+because it hangs upside down by the ankles and the rope stretches it, so
+sorting that run by height gives the tension ramp. What is nowhere in the
+resources is the rope, the gantry or the ground — so the drop, the recoil and
+the rope are drawn in `all/modules/bungee.js` rather than lifted, and only the
+pixels are the original's.
+
+The second and third groups are otherwise portable by watching the original
 run and rebuilding the staging by eye — which is what `adrun.sh` is for, and
 which is blocked for 16-bit modules by the painting problem below.
 
