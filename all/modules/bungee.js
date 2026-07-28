@@ -25,7 +25,10 @@
  * Each jumper is a run of frames of the same creature at different lengths,
  * because it hangs upside down by the ankles and the rope stretches it: sort
  * that run by height and you have the tension ramp, which is what `stretch`
- * below is. Then the joke, which the artwork makes plain and the module's
+ * below is. The daredevil is drawn in two pieces, his lower half being the
+ * seven frames at the start of 9001; everything else in that sequence is his
+ * too, so nobody else gets a landing animation - the cow, the chicken and the
+ * fish simply arrive. Then the joke, which the artwork makes plain and the module's
  * hint strings confirm - "Rhea, this cow is for you", "Anyone want a milk
  * shake?" - is what each one turns into. The cow leaves burgers, hot dogs and
  * steaks; the fish leaves sushi, a severed head and a pile of bones; the
@@ -40,6 +43,10 @@
  * rope itself are drawn here rather than lifted. Everything with pixels in it
  * is the original's.
  *
+ * Jumps is the module's own "how many must die before the screen FINALLY
+ * clears", and it also sets how many are in the air at once, because at one
+ * at a time Hundreds would take all afternoon.
+ *
  *   <after-dark-bungee jumper="random" jumps="many" equipment="so - so">
  */
 (function () {
@@ -47,10 +54,8 @@
 
   var JUMP = '9000', SPLAT = '9001';
 
-  /* Out of 9001. The first seven frames are the daredevil turning over in mid
-     air - the flip he gets in once the rope has let go and before the ground
-     arrives - and only from 7 is he actually landing. */
-  var TUMBLE = [0, 1, 2, 3, 4, 5, 6];
+  /* Out of 9001, and all of it the daredevil - no other jumper has any art in
+     this sequence. 0-6 are his lower half; 7 on is him landing. */
   var IMPACT = [7, 8, 9, 11, 12, 13, 14, 15, 16];
   var MESS = [21, 22, 23, 24, 25, 26, 27, 28, 32, 33, 34, 35];
   var BONES = [43, 44, 46];
@@ -61,11 +66,20 @@
      Two of the cow's frames, 4 and 5, are the animal cut clean off at the
      belly - a full row of pixels along the bottom edge where a whole cow
      tapers away to its legs - so they are not a shorter cow and do not belong
-     on the ramp. Presumably they are what the module's Half options used. The
-     daredevil's flat base is not that: it is the shape, and the impact frames
-     show the same silhouette. */
+     on the ramp. Presumably they are what the module's Half options used.
+
+     The daredevil is cut off at the waist for a different reason: he is drawn
+     in two pieces, and the seven frames at the start of 9001 are his lower
+     half - torso, arms and goggled head - waving about as he dangles. They sit
+     directly under the stretch frame, and where along it is exactly derivable:
+     line the first opaque pixel of the upper piece's bottom row up with the
+     first opaque pixel of the lower piece's top row and the join is seamless.
+     `joinTop` and `joinLeft` are those two runs. Nothing else in either
+     sequence joins anything - the cow, chicken and fish are whole. */
   var JUMPERS = [
-    { name: 'daredevil', stretch: [102, 99, 100, 101], tumble: TUMBLE,
+    { name: 'daredevil', stretch: [102, 99, 100, 101], joinTop: [3, 0, 0, 1],
+      lower: [0, 1, 2, 3, 4, 5, 6], joinLeft: [15, 6, 2, 0, 20, 3, 0],
+      impact: IMPACT,
       remains: [], stuck: [17, 18, 19, 20] },   // limbs out of a puddle, from 9001
     { name: 'cow',       stretch: [3, 0, 1, 2],
       remains: [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50] },
@@ -90,7 +104,7 @@
   var DAMP = 0.55;            // energy left after each bounce
   var HAUL = 220;             // px/s the survivors are pulled back up
   var CRUSH = 22;             // impact frames per second
-  var TURNOVER = 12;          // the mid-air flip, frames per second
+  var WAVE = 9;               // the daredevil's arms, frames per second
 
   function rand(a, b) { return a + Math.random() * (b - a); }
   function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
@@ -106,9 +120,28 @@
     this.rope = ROPE['so - so'];
     this.clear = true;
     this.mess = [];           // what has already hit the ground, and stays
-    this.jumper = null;
+    this.jumpers = [];
     this.done = 0;
   }
+
+  /* "Jumps" is how many must die before the screen clears, which on its own
+     would mean waiting all day for Hundreds, so it sets how many are in the
+     air at once as well. */
+  Bungee.prototype.atOnce = function () {
+    return Math.max(1, Math.min(8, Math.round(this.jumps / 4)));
+  };
+
+  /** The whole creature, which for the daredevil is two frames stacked. */
+  Bungee.prototype.size = function (kind) {
+    var f = this.jump.frames[kind.stretch[kind.stretch.length - 1]];
+    var tall = f.h, wide = f.w;
+    if (kind.lower) {
+      var low = this.splat.frames[kind.lower[0]];
+      tall += low.h;
+      wide = Math.max(wide, low.w);
+    }
+    return { w: wide, h: tall };
+  };
 
   Bungee.prototype.setJumper = function (name) {
     name = (name || 'random').toLowerCase().replace(/^half\s+/, '');
@@ -118,28 +151,31 @@
   Bungee.prototype.reset = function (w, h) {
     this.mess = [];
     this.done = 0;
-    this.jumper = null;
-    this.next(w, h);
+    this.jumpers = [];
+    this.fill(w, h);
+  };
+
+  /** Top up to however many should be going at once. */
+  Bungee.prototype.fill = function (w, h) {
+    while (this.jumpers.length < this.atOnce()) { this.jumpers.push(this.next(w, h)); }
   };
 
   Bungee.prototype.next = function (w, h) {
     var kind = this.choice === 'random' ? pick(JUMPERS) : this.kinds[this.choice];
-    var seq = this.jump;
-    var tall = seq.frames[kind.stretch[kind.stretch.length - 1]].h;
+    var size = this.size(kind);
     // Where the rope runs out, which is what decides whether the ground is
     // reached at all.
-    var slack = rand(h * 0.42, h * 0.66);
-    this.jumper = {
+    return {
       kind: kind,
-      x: rand(w * 0.15, w * 0.85),
-      y: -tall,
+      x: rand(size.w * 0.6, Math.max(size.w * 0.6 + 1, w - size.w * 0.6)),
+      y: -size.h - rand(0, h * 0.5),      // staggered, so they do not fall in step
       vy: 0,
-      slack: slack,
+      slack: rand(h * 0.36, h * 0.6),
       snapped: Math.random() < this.rope,
       roped: true,
       tension: 0,
       state: 'falling',
-      frame: 0,
+      frame: rand(0, 6),
       bounces: 0
     };
   };
@@ -163,10 +199,15 @@
   };
 
   Bungee.prototype.step = function (dt, w, h) {
-    var j = this.jumper;
-    if (!j) { return; }
-    var seq = this.jump;
-    var tall = seq.frames[j.kind.stretch[j.kind.stretch.length - 1]].h;
+    for (var i = this.jumpers.length - 1; i >= 0; i -= 1) {
+      if (this.one(this.jumpers[i], dt, w, h)) { this.jumpers.splice(i, 1); }
+    }
+    this.fill(w, h);
+  };
+
+  /** One jumper. Returns true when it is finished with. */
+  Bungee.prototype.one = function (j, dt, w, h) {
+    var tall = this.size(j.kind).h;
     var floor = h - 6;
 
     if (j.state === 'falling' || j.state === 'rebound') {
@@ -182,12 +223,13 @@
         j.tension = Math.max(0, j.tension - dt * 3);
       }
       j.y += j.vy * dt;
-      // Once the rope has let go there is a flip on the way down.
-      if (!j.roped) { j.frame += TURNOVER * dt; }
+      j.frame += WAVE * dt;
 
       if (!j.roped && j.y + tall >= floor) {
-        j.state = 'impact';
-        j.frame = 0;
+        // Only the daredevil has art for the landing. Everything else simply
+        // arrives, so it goes straight to being a mess.
+        if (j.kind.impact) { j.state = 'impact'; j.frame = 0; }
+        else { this.splatter(j, w, h); return true; }
       } else if (j.roped && j.vy < 0 && over <= 0) {
         j.bounces += 1;
         j.vy *= DAMP;
@@ -195,17 +237,20 @@
       }
     } else if (j.state === 'impact') {
       j.frame += CRUSH * dt;
-      if (j.frame >= IMPACT.length) {
-        this.land(j, w, h);
-        this.done += 1;
-        if (this.done >= this.jumps) { this.mess = []; this.done = 0; }
-        this.next(w, h);
-      }
+      if (j.frame >= j.kind.impact.length) { this.splatter(j, w, h); return true; }
     } else if (j.state === 'haul') {
       j.y -= HAUL * dt;
       j.tension = Math.max(0, j.tension - dt * 2);
-      if (j.y + tall < 0) { this.next(w, h); }
+      if (j.y + tall < 0) { return true; }
     }
+    return false;
+  };
+
+  /** Down for good: leave the mess, and clear the screen on the count. */
+  Bungee.prototype.splatter = function (j, w, h) {
+    this.land(j, w, h);
+    this.done += 1;
+    if (this.done >= this.jumps) { this.mess = []; this.done = 0; }
   };
 
   Bungee.prototype.draw = function (ctx, w, h) {
@@ -222,20 +267,14 @@
       m.seq.draw(ctx, m.frame, m.x, m.y);
     }
 
-    var j = this.jumper;
-    if (!j) { return; }
+    for (i = 0; i < this.jumpers.length; i += 1) { this.drawJumper(ctx, this.jumpers[i], h); }
+  };
 
+  Bungee.prototype.drawJumper = function (ctx, j, h) {
     if (j.state === 'impact') {
-      var fi = IMPACT[Math.min(IMPACT.length - 1, Math.floor(j.frame))];
+      var fi = j.kind.impact[Math.min(j.kind.impact.length - 1, Math.floor(j.frame))];
       var f = this.splat.frames[fi];
       this.splat.draw(ctx, fi, j.x, h - f.h / 2 - 4);
-      return;
-    }
-
-    // Falling free, with the flip if this one has the frames for it.
-    if (!j.roped && j.kind.tumble) {
-      var ti = j.kind.tumble[Math.floor(j.frame) % j.kind.tumble.length];
-      this.splat.draw(ctx, ti, j.x, j.y + this.splat.frames[ti].h / 2);
       return;
     }
 
@@ -245,7 +284,10 @@
     var seq = this.jump;
     var fall = Math.max(0, Math.min(1, j.y / Math.max(1, j.slack)));
     var t = Math.max(fall * 0.5, j.tension);
-    var idx = j.kind.stretch[Math.round(t * (j.kind.stretch.length - 1))];
+    var step = Math.round(t * (j.kind.stretch.length - 1));
+    var idx = j.kind.stretch[step];
+    var top = seq.frames[idx];
+
     if (j.roped) {
       ctx.strokeStyle = '#c8c8c8';
       ctx.lineWidth = 2;
@@ -254,7 +296,17 @@
       ctx.lineTo(Math.round(j.x) + 0.5, Math.round(j.y));
       ctx.stroke();
     }
-    seq.draw(ctx, idx, j.x, j.y + seq.frames[idx].h / 2);
+
+    seq.draw(ctx, idx, j.x, j.y + top.h / 2);
+
+    // The daredevil's lower half goes straight under, lined up so the two
+    // silhouettes meet - see joinTop/joinLeft above.
+    if (j.kind.lower) {
+      var li = Math.floor(j.frame) % j.kind.lower.length;
+      var low = this.splat.frames[j.kind.lower[li]];
+      var dx = (j.kind.joinTop[step] - top.w / 2) - (j.kind.joinLeft[li] - low.w / 2);
+      this.splat.draw(ctx, j.kind.lower[li], j.x + dx, j.y + top.h + low.h / 2);
+    }
   };
 
   /* ------------------------------------------------------------ element */
