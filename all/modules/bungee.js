@@ -29,7 +29,11 @@
  * hint strings confirm - "Rhea, this cow is for you", "Anyone want a milk
  * shake?" - is what each one turns into. The cow leaves burgers, hot dogs and
  * steaks; the fish leaves sushi, a severed head and a pile of bones; the
- * daredevil leaves the concertina and the blood.
+ * chicken leaves nuggets; the daredevil leaves the concertina and the blood.
+ *
+ * The chicken is not on the module's own Jumper menu, which lists six entries
+ * and no more. Its ramp and its remains are unmistakably in the artwork all
+ * the same, so it is here, and Random will use it.
  *
  * What is not in the resources is the staging. There is no bridge, no gantry
  * and no rope anywhere in the 171 frames, so the drop, the recoil and the
@@ -43,22 +47,34 @@
 
   var JUMP = '9000', SPLAT = '9001';
 
+  /* Out of 9001. The first seven frames are the daredevil turning over in mid
+     air - the flip he gets in once the rope has let go and before the ground
+     arrives - and only from 7 is he actually landing. */
+  var TUMBLE = [0, 1, 2, 3, 4, 5, 6];
+  var IMPACT = [7, 8, 9, 11, 12, 13, 14, 15, 16];
+  var MESS = [21, 22, 23, 24, 25, 26, 27, 28, 32, 33, 34, 35];
+  var BONES = [43, 44, 46];
+
   /* `stretch` is the creature's frames ordered slack to taut. `remains` is
-     what it leaves behind. */
+     what it leaves behind.
+
+     Two of the cow's frames, 4 and 5, are the animal cut clean off at the
+     belly - a full row of pixels along the bottom edge where a whole cow
+     tapers away to its legs - so they are not a shorter cow and do not belong
+     on the ramp. Presumably they are what the module's Half options used. The
+     daredevil's flat base is not that: it is the shape, and the impact frames
+     show the same silhouette. */
   var JUMPERS = [
-    { name: 'daredevil', stretch: [102, 99, 100, 101],
+    { name: 'daredevil', stretch: [102, 99, 100, 101], tumble: TUMBLE,
       remains: [], stuck: [17, 18, 19, 20] },   // limbs out of a puddle, from 9001
-    { name: 'cow',       stretch: [5, 4, 3, 0, 1, 2],
+    { name: 'cow',       stretch: [3, 0, 1, 2],
       remains: [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50] },
+    { name: 'chicken',   stretch: [27, 28, 29],
+      remains: [30, 31, 32, 33] },
     { name: 'fish',      stretch: [54, 51, 52, 53, 55, 56, 57, 58],
       remains: [74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86],
       parts: [68, 69, 70, 71, 72, 73, 91, 92, 93, 94, 95, 96, 97, 98] }
   ];
-
-  // The impact, in order, out of 9001; then the mess it leaves.
-  var IMPACT = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16];
-  var MESS = [21, 22, 23, 24, 25, 26, 27, 28, 32, 33, 34, 35];
-  var BONES = [43, 44, 46];
 
   var JUMPS = {
     'one': 1, 'few': 3, 'many': 6, 'droves': 12, 'whole bunches': 20, 'hundreds': 40
@@ -74,6 +90,7 @@
   var DAMP = 0.55;            // energy left after each bounce
   var HAUL = 220;             // px/s the survivors are pulled back up
   var CRUSH = 22;             // impact frames per second
+  var TURNOVER = 12;          // the mid-air flip, frames per second
 
   function rand(a, b) { return a + Math.random() * (b - a); }
   function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
@@ -165,6 +182,8 @@
         j.tension = Math.max(0, j.tension - dt * 3);
       }
       j.y += j.vy * dt;
+      // Once the rope has let go there is a flip on the way down.
+      if (!j.roped) { j.frame += TURNOVER * dt; }
 
       if (!j.roped && j.y + tall >= floor) {
         j.state = 'impact';
@@ -210,6 +229,13 @@
       var fi = IMPACT[Math.min(IMPACT.length - 1, Math.floor(j.frame))];
       var f = this.splat.frames[fi];
       this.splat.draw(ctx, fi, j.x, h - f.h / 2 - 4);
+      return;
+    }
+
+    // Falling free, with the flip if this one has the frames for it.
+    if (!j.roped && j.kind.tumble) {
+      var ti = j.kind.tumble[Math.floor(j.frame) % j.kind.tumble.length];
+      this.splat.draw(ctx, ti, j.x, j.y + this.splat.frames[ti].h / 2);
       return;
     }
 
