@@ -83,6 +83,7 @@ The decoded ones are also custom elements, so if you are hosting the files yours
 | `<after-dark-fishpro>` | `modules/fishpro.js` | `fish` = solo / study group / class / school / university, `sea-floor` = none / static / animated, `select-fish` = a comma-separated list of species |
 | `<after-dark-bugs>` | `modules/bugs.js` | `density` = nest / colony / infestation / swarm / plague / new york, `type` = scarab / jewel / roaches / ants / ladybugs / flys / all, `clear-screen="no"` to let the page show through |
 | `<after-dark-cham>` | `modules/cham.js` | `quantity` = few / some / more / some more / lots, `zest` = laconic / perky / frisky / hyper, `vomiter` = none / upset tummy / nauseous / sick / poisoned / vomitorium |
+| `<after-dark-toxic>` | `modules/toxic.js` | `critters` = depopulated / lonely / fruitful / swarming / festering, `lung-capacity` = thimble / cup / quart / gallon / barrel, `fish-only` and `swamp-floor` are flags |
 | `<after-dark-bungee>` | `modules/bungee.js` | `jumper` = daredevil / cow / fish / random, `jumps` = one / few / many / droves / whole bunches / hundreds, `equipment` = safe / reliable / used / so - so / purfikt |
 
 The option names are the module's own, read out of its `TYPE_1000` control-panel strings.

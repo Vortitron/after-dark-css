@@ -50,9 +50,12 @@
     { seq: '1000', from: 7,  len: 6,  faces: 1 },
     { seq: '1001', from: 25, len: 5,  faces: 1 },
     { seq: '1001', from: 0,  len: 6,  faces: 1 },
-    { seq: '1002', from: 5,  len: 15, faces: -1 },
-    { seq: '1002', from: 34, len: 8,  faces: 1 }
+    { seq: '1002', from: 5,  len: 15, faces: -1 }
   ];
+  /* 1002 frames 33-43 look like more of the same but are close-up heads cut
+     off at the left - a solid column of pixels down that edge, where a whole
+     creature tapers away - so they are pieces of a bigger picture and are left
+     out. */
 
   var PUKE = { seq: '1004', from: 39, len: 8, faces: 1 };   // the head, mid-heave
   var MESS = { seq: '1004', from: 46, len: 7 };             // and the puddle

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Toxic Swamp Screensaver | After Dark in the Browser</title>
+  <meta name="description" content="After Dark's Toxic Swamp, running in the browser with the artwork decoded out of the original Toxic.ad module.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../img/favicon.png" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    html, body { height: 100%; }
+    body { background: #000; margin: 0; overflow: hidden; }
+
+    after-dark-toxic {
+      position: absolute;
+      inset: 0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="visuallyhidden">Toxic Swamp Screensaver - After Dark in the Browser</h1>
+
+  <!-- critters is the original's Depopulated / Lonely / Fruitful / Swarming /
+       Festering, and lung-capacity its Thimble / Cup / Quart / Gallon / Barrel,
+       which is how long Larry the Lawyer lasts before his face goes blue. -->
+  <after-dark-toxic art="art/toxic" critters="fruitful" lung-capacity="quart" swamp-floor></after-dark-toxic>
+
+  <script src="ad.js"></script>
+  <script src="modules/toxic.js"></script>
+</body>
+</html>
