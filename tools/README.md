@@ -106,13 +106,19 @@ Having the artwork is not the same as being able to rebuild the module, and the
 line between the two is not where the bitmap count suggests. What decides it is
 whether a sprite is a whole thing that moves on its own:
 
-- **Sprite-per-object.** Marbles, Flying Toasters, Flocks, Aquatic Realm. Each
-  bitmap is a complete marble or bird or fish, the module's settings say how
-  many and how fast, and the rest is motion. These are done.
+- **Sprite-per-object.** Marbles, Flying Toasters, Flocks, Aquatic Realm, Fish
+  Pro, Bugs. Each bitmap is a complete marble or bird or fish, the module's
+  settings say how many and how fast, and the rest is motion. These are done.
+  Two of them carry their facing in the artwork rather than needing it guessed:
+  every Fish Pro species is a broadside cycle followed by the fish rotating
+  away until it is edge-on, and the Bugs jewel beetle, ant and fly each ship a
+  quarter turn of pre-rendered headings that a mirror in x and y completes.
 - **Composed characters.** Swan Lake keeps bodies (`600-608`), necks
   (`300-307`) and water reflections (`700-707`) as separate bitmaps that have
   to be layered at the right offsets. Flying Toilets is a toilet plus a
-  detached pair of wings. The offsets are in the code, not the resources.
+  detached pair of wings. Bugs' spiders are fifteen frames of one jointed leg
+  at the end of `4000` and `6000`, with no body anywhere. The offsets are in
+  the code, not the resources.
 - **Staged scenes.** Confetti Factory has ducks, gears, conveyor belts and two
   wall styles but no picture of the factory. Bad Dog needs a desktop, Rat Race
   a track, Bungee Roulette a bridge and a cord. The layout was drawn in code

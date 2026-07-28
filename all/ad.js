@@ -29,11 +29,37 @@
   }
 
   /* Frames carry their own tight bounding box, so centre each one on the
-     sequence's nominal size rather than assuming they all match. */
-  Sequence.prototype.draw = function (ctx, index, cx, cy) {
+     sequence's nominal size rather than assuming they all match.
+     `opts` is for the modules whose creatures are drawn facing one way and
+     turned round for the other, or set back in a tank: {flipX, flipY, scale}. */
+  Sequence.prototype.draw = function (ctx, index, cx, cy, opts) {
     var f = this.frames[((index % this.count) + this.count) % this.count];
+    var o = opts || {};
+    var s = o.scale || 1;
+    var w = f.w * s, h = f.h * s;
+    if (!o.flipX && !o.flipY && s === 1) {
+      ctx.drawImage(this.image, f.x, f.y, f.w, f.h,
+                    Math.round(cx - f.w / 2), Math.round(cy - f.h / 2), f.w, f.h);
+      return;
+    }
+    ctx.save();
+    ctx.translate(Math.round(cx), Math.round(cy));
+    ctx.scale(o.flipX ? -1 : 1, o.flipY ? -1 : 1);
     ctx.drawImage(this.image, f.x, f.y, f.w, f.h,
-                  Math.round(cx - f.w / 2), Math.round(cy - f.h / 2), f.w, f.h);
+                  Math.round(-w / 2), Math.round(-h / 2), w, h);
+    ctx.restore();
+  };
+
+  /** As draw(), but turned to `angle` radians - for the top-down creatures. */
+  Sequence.prototype.drawTurned = function (ctx, index, cx, cy, angle, scale) {
+    var f = this.frames[((index % this.count) + this.count) % this.count];
+    var s = scale || 1;
+    ctx.save();
+    ctx.translate(Math.round(cx), Math.round(cy));
+    ctx.rotate(angle);
+    ctx.drawImage(this.image, f.x, f.y, f.w, f.h,
+                  Math.round(-f.w * s / 2), Math.round(-f.h * s / 2), f.w * s, f.h * s);
+    ctx.restore();
   };
 
   /* A 3.x module's artwork is a single unanimated DIB. Some are one picture,
