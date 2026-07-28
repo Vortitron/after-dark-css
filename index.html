@@ -459,6 +459,8 @@
         js: 'bugs', el: 'after-dark-bugs', attrs: 'art="all/art/bugs" density="infestation" type="all"' },
       { name: 'Bungee Roulette', file: 'all/bungee.html',          kind: 'ripped', tag: 'BUNGEE.AD 1995',
         js: 'bungee', el: 'after-dark-bungee', attrs: 'art="all/art/bungee" jumper="random" jumps="many" equipment="so - so"' },
+      { name: 'Chameleon',       file: 'all/cham.html',            kind: 'ripped', tag: 'CHAM.AD 1995',
+        js: 'cham', el: 'after-dark-cham', attrs: 'art="all/art/cham" quantity="some" zest="perky" vomiter="sick"' },
       { name: 'Flying Toasters', file: 'all/flying-toasters.html', kind: 'css' },
       { name: 'Fish',            file: 'all/fish.html',            kind: 'css' },
       { name: 'Globe',           file: 'all/globe.html',           kind: 'css' },
@@ -517,6 +519,14 @@
         { name: 'type', label: 'Bug Type',
           values: ['all', 'scarab', 'jewel', 'roaches', 'ants', 'ladybugs', 'flys'] },
         { name: 'clear-screen', label: 'Clear Screen First', check: true, on: true }
+      ],
+      cham: [
+        { name: 'quantity', label: 'Quantity',
+          values: ['some', 'few', 'more', 'some more', 'lots'] },
+        { name: 'zest', label: 'Zest',
+          values: ['perky', 'laconic', 'frisky', 'hyper'] },
+        { name: 'vomiter', label: 'Vomiter',
+          values: ['sick', 'none', 'upset tummy', 'nauseous', 'poisoned', 'vomitorium'] }
       ],
       bungee: [
         { name: 'jumper', label: 'Jumper',
