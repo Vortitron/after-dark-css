@@ -135,7 +135,24 @@ pixels are the original's.
 
 The second and third groups are otherwise portable by watching the original
 run and rebuilding the staging by eye — which is what `adrun.sh` is for, and
-which is blocked for 16-bit modules by the painting problem below.
+which turns out to work for more modules than the note below used to claim.
+Of 33 modules tried, 20 painted their own display and 13 fell back to Starry
+Night, which is what the engine shows when a module will not load:
+
+| | |
+| --- | --- |
+| Painted | BADDOG, CHAM, CRITIC, FISH, GUERNSEY, HALL OF FAME, LIFE, MARBLES, MESSAGES, OUT, PSYCHO, RAIN, RPS, SLOWBURN, SUPERGUY, SWIRLING, TOAST2K, TOASTER 2K, TOASTERS, TURTLE |
+| Fell back to Starry Night | CYBER, HULA, MBORIS, MIMEHUNT, PHLEGM_B, POINTS, RATRACE, RODGER, SHADOW, TIME, TOXIC, VOYEUR, YBYH |
+
+That is the useful result, because it is the staged scenes that need it. Bad
+Dog paints its whole fake desktop — scattered folder icons, a 3D Application
+window with a vase in it, and the dog — none of which is in the resource
+table. Guernsey paints too, which is the way to fix its palette: its sprites
+decode to grey noise because neither a CTAB nor a module PAL turns up for it,
+and a capture says what the colours should be.
+
+Nothing here helps the 45 modules with no artwork at all. Those draw
+themselves, and no amount of watching them changes that.
 
 ## adrun.sh — running the originals
 
@@ -158,6 +175,7 @@ comment at the top of the script. Two things to know:
 - The engine only enables its 16-bit module loader when `GetVersionExA` reports
   a 9x platform, so the prefix has to claim Windows 98 for NE modules — and the
   PE modules render blank under that setting. The script picks per module.
-- 16-bit modules currently load but barely paint, with Wine complaining
-  `K32WOWHandle16 handle ... has non-zero HIWORD`. Their artwork still extracts
+- Whether a module paints is per module rather than per format: Chameleon is
+  16-bit and paints fine, Hula is 32-bit and does not. Wine complains
+  `K32WOWHandle16 handle ... has non-zero HIWORD` either way. Artwork extracts
   perfectly, so this only affects reference capture.
