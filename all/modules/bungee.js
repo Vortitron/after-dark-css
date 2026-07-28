@@ -272,12 +272,12 @@
 
     window.AfterDark.load(base).then(function (art) {
       var sim = new Bungee(art);
-      sim.setJumper(self.getAttribute('jumper'));
-      var jumps = (self.getAttribute('jumps') || 'many').toLowerCase();
+      sim.setJumper(AfterDark.setting(self, 'jumper'));
+      var jumps = (AfterDark.setting(self, 'jumps') || 'many').toLowerCase();
       sim.jumps = JUMPS[jumps] || parseInt(jumps, 10) || JUMPS.many;
-      var kit = (self.getAttribute('equipment') || 'so - so').toLowerCase();
+      var kit = (AfterDark.setting(self, 'equipment') || 'so - so').toLowerCase();
       sim.rope = ROPE[kit] !== undefined ? ROPE[kit] : ROPE['so - so'];
-      sim.clear = self.getAttribute('clear-screen') !== 'no';
+      sim.clear = AfterDark.setting(self, 'clear-screen') !== 'no';
       if (sim.clear) { self.style.background = '#000'; }
 
       var screen = new AfterDark.Screen(self);

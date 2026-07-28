@@ -333,11 +333,11 @@
 
     window.AfterDark.load(base).then(function (art) {
       var sim = new FishPro(art);
-      var fish = (self.getAttribute('fish') || 'school').toLowerCase();
+      var fish = (AfterDark.setting(self, 'fish') || 'school').toLowerCase();
       sim.count = COUNTS[fish] || parseInt(fish, 10) || COUNTS.school;
-      var floor = self.getAttribute('sea-floor');
+      var floor = AfterDark.setting(self, 'sea-floor');
       if (floor !== null) { sim.seaFloor = floor.toLowerCase(); }
-      var only = self.getAttribute('select-fish');
+      var only = AfterDark.setting(self, 'select-fish');
       if (only) {
         sim.chosen = only.toLowerCase().split(',').map(function (s) { return s.trim(); });
       }

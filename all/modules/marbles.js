@@ -229,12 +229,12 @@
 
     window.AfterDark.load(base).then(function (art) {
       var sim = new Marbles(art);
-      sim.setPinSize((self.getAttribute('pin-size') || 'medium').toLowerCase());
+      sim.setPinSize((AfterDark.setting(self, 'pin-size') || 'medium').toLowerCase());
 
-      var pins = (self.getAttribute('pins') || 'many').toLowerCase();
+      var pins = (AfterDark.setting(self, 'pins') || 'many').toLowerCase();
       sim.density = PIN_DENSITY[pins] !== undefined ? PIN_DENSITY[pins] : PIN_DENSITY.many;
 
-      var speed = (self.getAttribute('speed') || 'medium').toLowerCase();
+      var speed = (AfterDark.setting(self, 'speed') || 'medium').toLowerCase();
       sim.speed = SPEEDS[speed] || Number(speed) || SPEEDS.medium;
 
       var screen = new AfterDark.Screen(self);

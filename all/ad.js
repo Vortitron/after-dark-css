@@ -133,6 +133,34 @@
     return out.sort(function (a, b) { return a - b; });
   };
 
+  /**
+   * A module's setting, which is an attribute on the element unless the page
+   * URL says otherwise: all/marbles.html?pins=lots&speed=fast. That is how the
+   * front page's Settings dialog gets a choice into a saver running in an
+   * iframe, and it means every saver page is linkable with its options set.
+   * Returns null if neither has it, and '' for a bare ?sea-floor.
+   */
+  function setting(el, name) {
+    var search = (global.location && global.location.search) || '';
+    if (search) {
+      var parts = search.slice(1).split('&');
+      for (var i = 0; i < parts.length; i += 1) {
+        var eq = parts[i].indexOf('=');
+        var key = eq < 0 ? parts[i] : parts[i].slice(0, eq);
+        if (decodeURIComponent(key) === name) {
+          return eq < 0 ? '' : decodeURIComponent(parts[i].slice(eq + 1).replace(/\+/g, ' '));
+        }
+      }
+    }
+    return el.getAttribute(name);
+  }
+
+  /** As setting(), for the options that are on-or-off rather than a value. */
+  function flag(el, name) {
+    var v = setting(el, name);
+    return v !== null && v !== 'no' && v !== 'off' && v !== 'false';
+  }
+
   function loadImage(src) {
     return new Promise(function (resolve, reject) {
       var im = new Image();
@@ -212,5 +240,8 @@
     global.removeEventListener('resize', this._onResize);
   };
 
-  global.AfterDark = { load: load, Screen: Screen, Sequence: Sequence, Bitmap: Bitmap };
+  global.AfterDark = {
+    load: load, Screen: Screen, Sequence: Sequence, Bitmap: Bitmap,
+    setting: setting, flag: flag
+  };
 }(window));

@@ -266,6 +266,21 @@
     .dialog .note { font-size: 11px; margin: 6px 0 0; }
     .dialog .acts { display: flex; justify-content: flex-end; gap: 6px; margin-top: 6px; }
 
+    /* --- the settings dialog, which is each module's own control panel --- */
+    .opts { display: grid; grid-template-columns: auto 1fr; gap: 8px 10px; align-items: center; }
+    .opts label { justify-self: end; }
+    .opts select {
+      width: 100%;
+      font: inherit;
+      background: var(--field); color: var(--ink);
+      border: 2px solid;
+      border-color: var(--shadow) var(--light) var(--light) var(--shadow);
+      padding: 2px;
+    }
+    .opts .check { grid-column: 2; display: flex; align-items: center; gap: 6px; }
+    .opts .check label { justify-self: start; }
+    .dialog .foot { display: flex; justify-content: flex-end; gap: 6px; padding: 0 12px 12px; }
+
     .about {
       margin-top: 12px;
       padding-top: 10px;
@@ -375,6 +390,7 @@
           <button class="push" id="full" disabled>Full screen</button>
           <button class="push" id="newtab" disabled>New tab</button>
           <button class="push" id="again" disabled>Restart</button>
+          <button class="push" id="opts" disabled>Settings&hellip;</button>
           <button class="push" id="embed" disabled>Embed&hellip;</button>
           <button class="push" id="random">Random</button>
         </div>
@@ -395,7 +411,9 @@
           <p>The teal ones are the fork&rsquo;s CSS-only recreations (no images, no
             JavaScript). They stay behind the checkbox above.</p>
           <p><b>Full screen</b> covers this page and stops on a click or key.
-            <b>New tab</b> opens the saver alone; <b>Embed&hellip;</b> gives you the markup.</p>
+            <b>New tab</b> opens the saver alone; <b>Embed&hellip;</b> gives you the markup.
+            <b>Settings&hellip;</b> is the module's own control panel, in its own
+            words, and the choices go on the URL &mdash; so any of these is a link.</p>
         </div>
       </details>
     </div>
@@ -452,9 +470,98 @@
     var list = document.getElementById('list');
     var glass = document.getElementById('screen');
     var off = document.getElementById('off');
+    /* --------------------------------------------------------- settings ---
+       Each module's own control panel, out of its TYPE_1000 strings. Keyed by
+       the module file, because that is what the options belong to. A `check`
+       is a tick box; everything else is a list, and the first entry is what
+       the module does when nothing is set. */
+    var OPTIONS = {
+      toasters: [
+        { name: 'objects', label: 'Objects', values: ['air wing', 'squadron', 'swarm'] }
+      ],
+      marbles: [
+        { name: 'pins', label: 'Pins', values: ['many', 'none', 'few', 'lots'] },
+        { name: 'pin-size', label: 'Pin Size', values: ['medium', 'x-small', 'big'] },
+        { name: 'speed', label: 'Speed', values: ['medium', 'slow', 'fast'] }
+      ],
+      'marbles-40': [
+        { name: 'count', label: 'Marbles',
+          values: ['a jar full', 'a few', 'a pouch full', 'a box full'] },
+        { name: 'pattern', label: 'Peg Pattern',
+          values: ['', '1', '2', '3', '4', '5', '6', '7', '8'], blank: 'Random' }
+      ],
+      aqua: [
+        { name: 'creatures', label: 'Creatures', values: ['14', '4', '8', '19'] },
+        { name: 'seaweed', label: 'Seaweed', values: ['6', '0', '3', '10'] },
+        { name: 'sea-floor', label: 'Show Sea Floor', check: true }
+      ],
+      flocks: [
+        { name: 'kind', label: 'Flock',
+          values: ['birds', 'polliwogs', 'gnats', 'paparazzi', 'atoms', 'copters', 'dots'] },
+        { name: 'size', label: 'Size', values: ['medium', 'small', 'large'] }
+      ],
+      fishpro: [
+        { name: 'fish', label: 'Fish',
+          values: ['school', 'solo', 'study group', 'class', 'university'] },
+        { name: 'sea-floor', label: 'Show Sea Floor', values: ['animated', 'none', 'static'] }
+      ],
+      bugs: [
+        { name: 'density', label: 'Bug Density',
+          values: ['infestation', 'nest', 'colony', 'swarm', 'plague', 'new york'] },
+        { name: 'type', label: 'Bug Type',
+          values: ['all', 'scarab', 'jewel', 'roaches', 'ants', 'ladybugs', 'flys'] },
+        { name: 'clear-screen', label: 'Clear Screen First', check: true, on: true }
+      ],
+      bungee: [
+        { name: 'jumper', label: 'Jumper',
+          values: ['random', 'daredevil', 'cow', 'chicken', 'fish'] },
+        { name: 'jumps', label: 'Jumps',
+          values: ['many', 'one', 'few', 'droves', 'whole bunches', 'hundreds'] },
+        { name: 'equipment', label: 'Equipment',
+          values: ['so - so', 'safe', 'reliable', 'used', 'purfikt'] }
+      ]
+    };
+
+    /** What the user has picked, per saver, as {option: value}. */
+    var picked = {};
+
+    function optionsFor(saver) {
+      return (saver && saver.js && OPTIONS[saver.js]) || null;
+    }
+
+    /** The saver's page with its settings on the end, which is how they reach
+        it: all/marbles.html?pins=lots&speed=fast. */
+    function urlFor(saver) {
+      var chosen = picked[saver.js] || {};
+      var parts = [];
+      Object.keys(chosen).forEach(function (k) {
+        parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(chosen[k]));
+      });
+      return parts.length ? saver.file + '?' + parts.join('&') : saver.file;
+    }
+
+    /** The same choices as element attributes, for the embed snippet. */
+    function attrsFor(saver) {
+      var chosen = picked[saver.js];
+      if (!chosen || !Object.keys(chosen).length) { return saver.attrs; }
+      var out = saver.attrs.replace(/^(art="[^"]*")\s*/, '$1\n  ');
+      var keep = out.split(/\s+(?=[a-z-]+=")/).filter(function (bit) {
+        return !Object.prototype.hasOwnProperty.call(chosen, bit.split('=')[0].trim());
+      });
+      Object.keys(chosen).forEach(function (k) {
+        keep.push(k + '="' + chosen[k] + '"');
+      });
+      return keep.join(' ');
+    }
+
+    function title(v) {
+      return v.replace(/(^|[\s-])([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); });
+    }
+
     var full = document.getElementById('full');
     var newtab = document.getElementById('newtab');
     var again = document.getElementById('again');
+    var opts = document.getElementById('opts');
     var embed = document.getElementById('embed');
     var showcss = document.getElementById('showcss');
     var shown = [];
@@ -485,6 +592,7 @@
 
     function setEnabled(on) {
       [full, newtab, again, embed].forEach(function (b) { b.disabled = !on; });
+      opts.disabled = !on || !optionsFor(current);
     }
 
     function select(i) {
@@ -493,7 +601,7 @@
         node.setAttribute('aria-current', j === i ? 'true' : 'false');
       });
       off.style.display = 'none';
-      glass.src = current.file;
+      glass.src = urlFor(current);
       setEnabled(true);
     }
 
@@ -548,7 +656,7 @@
       if (!current || saver) { return; }
       var box = el('div', 'saver');
       var frame = document.createElement('iframe');
-      frame.src = current.file;
+      frame.src = urlFor(current);
       frame.title = current.name + ' screen saver';
       frame.setAttribute('scrolling', 'no');
       box.appendChild(frame);
@@ -573,7 +681,7 @@
     }
 
     function openTab() {
-      if (current) { window.open(current.file, '_blank', 'noopener'); }
+      if (current) { window.open(urlFor(current), '_blank', 'noopener'); }
     }
 
     /* -------------------------------------------------------- embedding -- */
@@ -589,7 +697,7 @@
     function snippets(s) {
       var out = [{
         cap: 'Anywhere, in an iframe',
-        code: '<iframe src="' + absolute(s.file) + '"\n' +
+        code: '<iframe src="' + absolute(urlFor(s)) + '"\n' +
               '        width="640" height="480" scrolling="no" style="border:0"\n' +
               '        title="' + s.name + ' screen saver"></iframe>',
         note: 'Works from any site. Nothing to install.'
@@ -599,7 +707,7 @@
           cap: 'On your own site, as a custom element',
           code: '<script src="all/ad.js"><\/script>\n' +
                 '<script src="all/modules/' + s.js + '.js"><\/script>\n' +
-                '<' + s.el + ' ' + s.attrs + '\n' +
+                '<' + s.el + ' ' + attrsFor(s) + '\n' +
                 '  style="display:block;width:640px;height:480px"></' + s.el + '>',
           note: 'Needs ad.js, modules/' + s.js + '.js and all/art/ copied across, ' +
                 'and the page served over http — the artwork is fetched, so file:// will not do.'
@@ -609,17 +717,39 @@
     }
 
     var modal = null;
+    var modalReturn = null;
 
     function closeEmbed() {
       if (!modal) { return; }
       document.removeEventListener('keydown', onModalKey);
       modal.parentNode.removeChild(modal);
       modal = null;
-      document.getElementById('embed').focus();
+      if (modalReturn) { modalReturn.focus(); modalReturn = null; }
     }
 
     function onModalKey(e) {
       if (e.key === 'Escape') { closeEmbed(); }
+    }
+
+    /** A Win95 dialog with a title bar, a body and a row of buttons. */
+    function openDialog(caption, opener) {
+      modal = el('div', 'modal');
+      modalReturn = opener;
+      var dialog = el('div', 'dialog');
+      var bar = el('div', 'titlebar');
+      bar.appendChild(el('span', 'grow', caption));
+      var x = el('span', 'btn out', '×');
+      x.onclick = closeEmbed;
+      bar.appendChild(x);
+      dialog.appendChild(bar);
+      modal.appendChild(dialog);
+      modal.onmousedown = function (e) { if (e.target === modal) { closeEmbed(); } };
+      return dialog;
+    }
+
+    function showDialog() {
+      document.body.appendChild(modal);
+      document.addEventListener('keydown', onModalKey);
     }
 
     function copyButton(area) {
@@ -636,18 +766,86 @@
       return b;
     }
 
+    /* ---------------------------------------------------------------------
+       The module's own control panel. Choosing here re-runs the preview with
+       the settings on the URL, which is also how Full screen, New tab and the
+       embed snippet pick them up. */
+    function openSettings() {
+      var spec = optionsFor(current);
+      if (!spec || modal) { return; }
+      var dialog = openDialog(current.name + ' Settings', opts);
+      var body = el('div', 'body');
+      var grid = el('div', 'opts');
+      var chosen = picked[current.js] || {};
+      var fields = [];
+
+      spec.forEach(function (o) {
+        var id = 'opt-' + o.name;
+        if (o.check) {
+          var wrap = el('div', 'check');
+          var box = document.createElement('input');
+          box.type = 'checkbox';
+          box.id = id;
+          box.checked = chosen[o.name] !== undefined
+            ? chosen[o.name] !== 'no'
+            : Boolean(o.on);
+          var lab = el('label', '', o.label);
+          lab.setAttribute('for', id);
+          wrap.appendChild(box);
+          wrap.appendChild(lab);
+          grid.appendChild(el('span', ''));
+          grid.appendChild(wrap);
+          fields.push({ o: o, read: function () { return box.checked ? 'yes' : 'no'; } });
+          return;
+        }
+        var label = el('label', '', o.label);
+        label.setAttribute('for', id);
+        var sel = document.createElement('select');
+        sel.id = id;
+        o.values.forEach(function (v) {
+          var opt = document.createElement('option');
+          opt.value = v;
+          opt.textContent = v === '' ? (o.blank || 'Default') : title(v);
+          sel.appendChild(opt);
+        });
+        sel.value = chosen[o.name] !== undefined ? chosen[o.name] : o.values[0];
+        grid.appendChild(label);
+        grid.appendChild(sel);
+        fields.push({ o: o, read: function () { return sel.value; } });
+      });
+
+      body.appendChild(grid);
+      body.appendChild(el('p', 'note',
+        'These are the module’s own options, read out of its control-panel strings.'));
+      dialog.appendChild(body);
+
+      var foot = el('div', 'foot');
+      var ok = el('button', 'push', 'OK');
+      ok.onclick = function () {
+        var out = {};
+        fields.forEach(function (f) {
+          var v = f.read();
+          // Only carry what differs from what the module does on its own.
+          var base = f.o.check ? (f.o.on ? 'yes' : 'no') : f.o.values[0];
+          if (v !== base) { out[f.o.name] = v; }
+        });
+        picked[current.js] = out;
+        glass.src = urlFor(current);
+        closeEmbed();
+      };
+      var cancel = el('button', 'push', 'Cancel');
+      cancel.onclick = closeEmbed;
+      foot.appendChild(ok);
+      foot.appendChild(cancel);
+      dialog.appendChild(foot);
+
+      showDialog();
+      ok.focus();
+    }
+
     function openEmbed() {
       if (!current || modal) { return; }
-      modal = el('div', 'modal');
-      var dialog = el('div', 'dialog');
-
-      var bar = el('div', 'titlebar');
-      bar.appendChild(el('span', 'grow', 'Embed — ' + current.name));
-      var x = el('span', 'btn out', '×');
-      x.onclick = closeEmbed;
-      bar.appendChild(x);
-      dialog.appendChild(bar);
-
+      var dialog = openDialog('Embed — ' + current.name, embed);
       var body = el('div', 'body');
       body.appendChild(el('p', '', 'Drop either of these into a page. Both run entirely in the browser.'));
       snippets(current).forEach(function (s) {
@@ -670,15 +868,13 @@
       foot.appendChild(close);
       dialog.appendChild(foot);
 
-      modal.appendChild(dialog);
-      modal.onmousedown = function (e) { if (e.target === modal) { closeEmbed(); } };
-      document.body.appendChild(modal);
-      document.addEventListener('keydown', onModalKey);
+      showDialog();
       close.focus();
     }
 
     full.onclick = startSaver;
     newtab.onclick = openTab;
+    opts.onclick = openSettings;
     embed.onclick = openEmbed;
     document.getElementById('ok').onclick = startSaver;
     document.getElementById('apply').onclick = startSaver;
@@ -686,7 +882,7 @@
     document.getElementById('random').onclick = function () {
       select(Math.floor(Math.random() * shown.length));
     };
-    again.onclick = function () { if (current) { glass.src = current.file; } };
+    again.onclick = function () { if (current) { glass.src = urlFor(current); } };
     showcss.onchange = render;
 
     function tick() {

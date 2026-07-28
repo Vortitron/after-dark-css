@@ -151,10 +151,10 @@
 
     window.AfterDark.load(base).then(function (art) {
       var sim = new Aqua(art);
-      sim.count = parseInt(self.getAttribute('creatures'), 10) || sim.count;
-      var weeds = self.getAttribute('seaweed');
+      sim.count = parseInt(AfterDark.setting(self, 'creatures'), 10) || sim.count;
+      var weeds = AfterDark.setting(self, 'seaweed');
       if (weeds !== null) { sim.weeds = parseInt(weeds, 10) || 0; }
-      sim.showFloor = self.hasAttribute('sea-floor');
+      sim.showFloor = AfterDark.flag(self, 'sea-floor');
 
       var screen = new AfterDark.Screen(self);
       self._screen = screen;

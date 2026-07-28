@@ -186,8 +186,8 @@
 
     window.AfterDark.load(base).then(function (art) {
       var sim = new Flocks(art);
-      sim.setKind((self.getAttribute('kind') || 'birds').toLowerCase());
-      var size = (self.getAttribute('size') || 'medium').toLowerCase();
+      sim.setKind((AfterDark.setting(self, 'kind') || 'birds').toLowerCase());
+      var size = (AfterDark.setting(self, 'size') || 'medium').toLowerCase();
       sim.size = SIZES[size] || parseInt(size, 10) || SIZES.medium;
 
       var screen = new AfterDark.Screen(self);

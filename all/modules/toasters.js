@@ -132,7 +132,7 @@
 
     window.AfterDark.load(base).then(function (art) {
       var sim = new Toasters(art);
-      var objects = (self.getAttribute('objects') || 'air wing').toLowerCase();
+      var objects = (AfterDark.setting(self, 'objects') || 'air wing').toLowerCase();
       sim.count = COUNTS[objects] || parseInt(objects, 10) || COUNTS['air wing'];
 
       var screen = new AfterDark.Screen(self);

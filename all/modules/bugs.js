@@ -173,12 +173,12 @@
 
     window.AfterDark.load(base).then(function (art) {
       var sim = new Bugs(art);
-      var density = (self.getAttribute('density') || 'colony').toLowerCase();
+      var density = (AfterDark.setting(self, 'density') || 'colony').toLowerCase();
       sim.count = DENSITY[density] || parseInt(density, 10) || DENSITY.colony;
-      sim.setType(self.getAttribute('type'));
+      sim.setType(AfterDark.setting(self, 'type'));
       // "Clear screen first" - on, unless it is turned off to let a page show
       // through, which is what it meant when the desktop was behind it.
-      sim.clear = self.getAttribute('clear-screen') !== 'no';
+      sim.clear = AfterDark.setting(self, 'clear-screen') !== 'no';
       if (sim.clear) { self.style.background = '#000'; }
 
       var screen = new AfterDark.Screen(self);

@@ -216,9 +216,9 @@
 
     window.AfterDark.load(base).then(function (art) {
       var sim = new Marbles(art, null);
-      var wanted = (self.getAttribute('count') || 'a jar full').toLowerCase();
+      var wanted = (AfterDark.setting(self, 'count') || 'a jar full').toLowerCase();
       sim.count = COUNTS[wanted] || parseInt(wanted, 10) || COUNTS['a jar full'];
-      var pattern = parseInt(self.getAttribute('pattern'), 10);
+      var pattern = parseInt(AfterDark.setting(self, 'pattern'), 10);
       if (pattern > 0) { sim.pattern = pattern; }
 
       var screen = new AfterDark.Screen(self);

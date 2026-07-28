@@ -84,7 +84,16 @@ The decoded ones are also custom elements, so if you are hosting the files yours
 | `<after-dark-bugs>` | `modules/bugs.js` | `density` = nest / colony / infestation / swarm / plague / new york, `type` = scarab / jewel / roaches / ants / ladybugs / flys / all, `clear-screen="no"` to let the page show through |
 | `<after-dark-bungee>` | `modules/bungee.js` | `jumper` = daredevil / cow / fish / random, `jumps` = one / few / many / droves / whole bunches / hundreds, `equipment` = safe / reliable / used / so - so / purfikt |
 
-The option names are the module's own, read out of its `TYPE_1000` control-panel strings. The front page has an **Embed…** button that writes the snippet out for whichever saver is selected.
+The option names are the module's own, read out of its `TYPE_1000` control-panel strings.
+
+Every option also works as a query string, so a saver page is linkable with its settings set and no copy of the files needed:
+
+```
+all/marbles.html?pins=lots&pin-size=big&speed=fast
+all/bungee.html?jumper=cow&equipment=purfikt&jumps=droves
+```
+
+The front page has a **Settings…** button that puts each module's own control panel back — the same options, in the module's own words — and applies them to the preview. **Embed…** then writes out the snippet with whatever is selected.
 
 ## Why?
 
