@@ -21,32 +21,41 @@
  *   5020  five corals      6000-6030  four anemones, six frames each
  *   7000  a bubble stream, six frames
  *
- * Every species strip is laid out the same way: a short cycle of broadside
- * frames, then the fish rotating away from the viewer until it is edge-on. So
- * a fish cruises on the broadside cycle and, to turn round, walks out along
- * the pivot frames, flips at the edge-on end and walks back. The frames past
- * that - tail-on views, and for the Yellow Tang and Red Clown a whole second
- * broadside facing the other way - are what the mirror already gives us, so
- * they go unused rather than guessed at.
+ * Most species are drawn in two pieces. Frame 0 is the body, and a later run
+ * of small frames is the head - or for the Butterfly Fish, whose body faces
+ * the other way, the tail - which butts onto the body's left edge. Nothing
+ * records the offset, but nothing has to: at the true join the two silhouettes
+ * agree exactly, so for each candidate piece there is one vertical offset at
+ * which every row of its right edge matches the body's left edge, and the
+ * composite is seamless. The offsets in `part` below were found that way, and
+ * the piece has several frames because the head works its mouth and the tail
+ * swishes. The Yellow Tang and the Red Clown are the exception: they are whole
+ * in one frame, and their strips are a real rotation - broadside, round
+ * through edge-on, out the other side - so those two turn by walking the
+ * pivot, flipping at the edge-on end and walking back. The rest turn by
+ * mirroring. Their remaining frames are turn-view bodies and turn-view tails
+ * that would have to be re-paired to be usable, which is a guess too far.
  *
  *   <after-dark-fishpro fish="school" sea-floor="animated"></after-dark-fishpro>
  */
 (function () {
   'use strict';
 
-  /* id, name from STRINGLIST 666, the broadside cycle, the pivot out to
-     edge-on, and which way the broadside art faces (-1 left, +1 right, 0 for
-     the two that are symmetrical enough never to be mirrored). */
+  /* id, name from STRINGLIST 666, the body frames, the piece that goes on the
+     body's left as [frame, vertical offset], the pivot out to edge-on for the
+     two that have one, and which way the art faces (-1 left, +1 right, 0 for
+     the jellyfish, which has no left or right and is never mirrored). */
   var SPECIES = [
-    { id: '3010', name: 'Yellow Tang',    swim: [0, 4],  pivot: [5, 6, 7],                    faces: -1 },
-    { id: '3020', name: 'Red Clown',      swim: [12, 18], pivot: [11, 10, 9, 8, 7, 6, 5, 4],  faces: -1 },
-    { id: '3030', name: 'Blue Tanger',    swim: [0, 0],  pivot: [6, 7, 8],                    faces: -1 },
-    { id: '3040', name: 'Trigger Fish',   swim: [0, 2],  pivot: [3, 4],                       faces: -1 },
-    { id: '3050', name: 'Pink Squirrel',  swim: [0, 5],  pivot: [14, 13, 12, 11, 10, 9, 8, 7, 6], faces: -1 },
-    { id: '3070', name: 'Butterfly Fish', swim: [0, 3],  pivot: [4, 5, 6, 7],                 faces: 1 },
-    { id: '3080', name: 'Emperor',        swim: [0, 0],  pivot: [1, 2, 3],                    faces: -1 },
-    { id: '3060', name: 'Jellyfish',      swim: [0, 4],  pivot: [],                           faces: 0 },
-    { id: '3110', name: 'Sardines',       swim: [0, 4],  pivot: [],                           faces: -1 }
+    { id: '3010', name: 'Yellow Tang',    body: [0, 4],  pivot: [5, 6, 7],                   faces: -1 },
+    { id: '3020', name: 'Red Clown',      body: [12, 18], pivot: [11, 10, 9, 8, 7, 6, 5, 4], faces: -1 },
+    { id: '3030', name: 'Blue Tanger',    body: [0, 0],  part: [[6, 2], [7, 2], [8, 2]],     faces: -1 },
+    { id: '3040', name: 'Trigger Fish',   body: [0, 2],  part: [[3, 23], [4, 23]],           faces: -1 },
+    { id: '3050', name: 'Pink Squirrel',  body: [0, 5],                                      faces: -1 },
+    { id: '3070', name: 'Butterfly Fish', body: [0, 3],
+      part: [[4, 37], [5, 36], [6, 35], [7, 37], [9, 38]],                                   faces: 1 },
+    { id: '3080', name: 'Emperor',        body: [0, 0],  part: [[1, 9], [2, 9], [3, 9]],     faces: -1 },
+    { id: '3060', name: 'Jellyfish',      body: [0, 4],                                      faces: 0 },
+    { id: '3110', name: 'Sardines',       body: [0, 4],                                      faces: -1 }
   ];
 
   var COUNTS = {
@@ -69,8 +78,24 @@
     this.species = [];
     var i;
     for (i = 0; i < SPECIES.length; i += 1) {
-      var seq = art.sequence(SPECIES[i].id);
-      if (seq) { this.species.push({ spec: SPECIES[i], seq: seq }); }
+      var spec = SPECIES[i];
+      var seq = art.sequence(spec.id);
+      if (!seq) { continue; }
+      spec.pivot = spec.pivot || [];
+      // How big the fish is once its piece is on, which is what the edge and
+      // depth tests want rather than the sequence's nominal size.
+      var w = seq.width, h = seq.height;
+      if (spec.part) {
+        var pw = 0, ph = 0;
+        spec.part.forEach(function (p) {
+          var f = seq.frames[p[0]];
+          pw = Math.max(pw, f.w);
+          ph = Math.max(ph, p[1] + f.h);
+        });
+        w = seq.frames[spec.body[0]].w + pw;
+        h = Math.max(h, ph);
+      }
+      this.species.push({ spec: spec, seq: seq, width: w, height: h });
     }
     this.floor = art.sequence(FLOOR);
     this.rocks = art.sequence(ROCKS);
@@ -108,19 +133,18 @@
      plane, so they are set back in the tank at a size to match. */
   FishPro.prototype.spawn = function (w, h, anywhere) {
     var s = pick(this.pool());
-    var seq = s.seq;
     var depth = Math.random();
     var scale = 0.55 + depth * 0.45;
     var right = Math.random() < 0.5;
     var deep = h - this.floorHeight();
-    var high = seq.height * scale * 0.6;
+    var high = s.height * scale * 0.6;
     return {
       s: s,
       depth: depth,
       scale: scale,
       right: right,
       speed: (18 + depth * 34) * (right ? 1 : -1),
-      x: anywhere ? rand(0, w) : (right ? -seq.width : w + seq.width),
+      x: anywhere ? rand(0, w) : (right ? -s.width : w + s.width),
       y: rand(high, Math.max(high + 1, deep - high * 0.4)),
       drift: rand(-7, 7),
       cycle: rand(0, 8),
@@ -205,12 +229,12 @@
         if (Math.abs(f.speed) > 90) { f.speed *= Math.pow(0.4, dt); }   // after a scatter
       }
 
-      var high = f.s.seq.height * f.scale * 0.55;
+      var high = f.s.height * f.scale * 0.55;
       var deep = h - this.floorHeight() - high * 0.3;
       if (f.y < high || f.y > deep) { f.drift = -f.drift; f.y = Math.min(Math.max(f.y, high), deep); }
 
       // Turn round before swimming off, if the species has the art for it.
-      var pad = f.s.seq.width * f.scale;
+      var pad = f.s.width * f.scale;
       var out = f.speed > 0 ? f.x > w - pad * 0.4 : f.x < pad * 0.4;
       if (out && !f.turning) {
         if (spec.pivot.length) { f.turning = 1; }
@@ -237,6 +261,40 @@
     return t < count ? t : span - t;
   }
 
+  /* The whole fish, body plus its piece if it has one, centred on the fish and
+     mirrored as a unit so the piece stays on the leading end. */
+  FishPro.prototype.drawFish = function (ctx, f) {
+    var spec = f.s.spec, seq = f.s.seq;
+    var body, part = null;
+
+    if (f.turning) {
+      body = seq.frames[spec.pivot[Math.min(spec.pivot.length - 1, Math.floor(f.turn))]];
+    } else {
+      var lo = spec.body[0], hi = spec.body[1];
+      body = seq.frames[lo + (hi > lo ? Math.floor(f.cycle) % (hi - lo + 1) : 0)];
+      if (spec.part) { part = spec.part[Math.floor(f.cycle) % spec.part.length]; }
+    }
+
+    var pf = part ? seq.frames[part[0]] : null;
+    var dy = part ? part[1] : 0;
+    var tw = body.w + (pf ? pf.w : 0);
+    var th = Math.max(body.h, pf ? dy + pf.h : 0);
+    // faces 0 is a creature with no left or right, so it is never mirrored.
+    var flip = spec.faces !== 0 && (f.right ? spec.faces < 0 : spec.faces > 0);
+
+    ctx.save();
+    ctx.translate(Math.round(f.x), Math.round(f.y));
+    if (flip) { ctx.scale(-1, 1); }
+    ctx.scale(f.scale, f.scale);
+    if (pf) {
+      ctx.drawImage(seq.image, pf.x, pf.y, pf.w, pf.h,
+                    Math.round(-tw / 2), Math.round(-th / 2 + dy), pf.w, pf.h);
+    }
+    ctx.drawImage(seq.image, body.x, body.y, body.w, body.h,
+                  Math.round(-tw / 2 + (pf ? pf.w : 0)), Math.round(-th / 2), body.w, body.h);
+    ctx.restore();
+  };
+
   FishPro.prototype.draw = function (ctx, w, h) {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, w, h);
@@ -251,20 +309,7 @@
       p = this.props[i];
       p.seq.draw(ctx, p.still ? p.frame : pingpong(p.frame, p.seq.count), p.x, p.y);
     }
-    for (i = 0; i < this.fish.length; i += 1) {
-      var f = this.fish[i];
-      var spec = f.s.spec;
-      var frame, flip;
-      if (f.turning) {
-        frame = spec.pivot[Math.min(spec.pivot.length - 1, Math.floor(f.turn))];
-      } else {
-        var lo = spec.swim[0], hi = spec.swim[1];
-        frame = lo + (hi > lo ? Math.floor(f.cycle) % (hi - lo + 1) : 0);
-      }
-      // faces 0 is a creature with no left or right, so it is never mirrored.
-      flip = spec.faces !== 0 && (f.right ? spec.faces < 0 : spec.faces > 0);
-      f.s.seq.draw(ctx, frame, f.x, f.y, { flipX: flip, scale: f.scale });
-    }
+    for (i = 0; i < this.fish.length; i += 1) { this.drawFish(ctx, this.fish[i]); }
     for (i = 0; i < this.streams.length; i += 1) {
       p = this.streams[i];
       this.bubbles.draw(ctx, Math.floor(p.frame), p.x,
