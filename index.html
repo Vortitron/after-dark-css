@@ -463,6 +463,8 @@
         js: 'cham', el: 'after-dark-cham', attrs: 'art="all/art/cham" quantity="some" zest="perky" vomiter="sick"' },
       { name: 'Toxic Swamp',     file: 'all/toxic.html',           kind: 'ripped', tag: 'Toxic.ad 1995',
         js: 'toxic', el: 'after-dark-toxic', attrs: 'art="all/art/toxic" critters="fruitful" lung-capacity="quart" swamp-floor' },
+      { name: 'Phlegm Boy',      file: 'all/phlegm.html',          kind: 'ripped', tag: 'PHLEGM_B.AD 1995',
+        js: 'phlegm', el: 'after-dark-phlegm', attrs: 'art="all/art/phlegm_b" behavior="ill-mannered" mess="nauseous"' },
       { name: 'Flying Toasters', file: 'all/flying-toasters.html', kind: 'css' },
       { name: 'Fish',            file: 'all/fish.html',            kind: 'css' },
       { name: 'Globe',           file: 'all/globe.html',           kind: 'css' },
@@ -537,6 +539,14 @@
           values: ['quart', 'thimble', 'cup', 'gallon', 'barrel'] },
         { name: 'fish-only', label: 'Fish Only', check: true },
         { name: 'swamp-floor', label: 'Show Swamp Floor', check: true, on: true }
+      ],
+      phlegm: [
+        { name: 'behavior', label: 'Behavior',
+          values: ['ill-mannered', 'pesky', 'unruly', 'horrid', 'atrocious', 'kill it!!!'] },
+        { name: 'mess', label: 'Mess',
+          values: ['nauseous', 'unkempt', 'besmirched', 'disquieting', 'disgusting',
+                   'art form', 'are you crazy?!'] },
+        { name: 'clear-screen', label: 'Clear Screen First', check: true, on: true }
       ],
       bungee: [
         { name: 'jumper', label: 'Jumper',
