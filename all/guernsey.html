@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Guernsey Madness Screensaver | After Dark in the Browser</title>
+  <meta name="description" content="After Dark's Guernsey Madness, running in the browser with the artwork decoded out of the original GUERNSEY.AD module.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../img/favicon.png" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    html, body { height: 100%; }
+    body { background: #000; margin: 0; overflow: hidden; }
+
+    after-dark-guernsey {
+      position: absolute;
+      inset: 0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="visuallyhidden">Guernsey Madness Screensaver - After Dark in the Browser</h1>
+
+  <!-- flavor is the original's Vanilla / Chocolate / Strawberry / Blueberry /
+       Grape / Banana / Lemon-Lime / Rainbow Splash / Bubble Gum / Cinnamon /
+       Mint / Tutti-Frutti, which is the colour the herd is tinted. -->
+  <after-dark-guernsey art="art/guernsey" flavor="tutti-frutti"></after-dark-guernsey>
+
+  <script src="ad.js"></script>
+  <script src="modules/guernsey.js"></script>
+</body>
+</html>

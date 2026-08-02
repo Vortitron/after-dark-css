@@ -85,6 +85,7 @@ The decoded ones are also custom elements, so if you are hosting the files yours
 | `<after-dark-cham>` | `modules/cham.js` | `quantity` = few / some / more / some more / lots, `zest` = laconic / perky / frisky / hyper, `vomiter` = none / upset tummy / nauseous / sick / poisoned / vomitorium |
 | `<after-dark-toxic>` | `modules/toxic.js` | `critters` = depopulated / lonely / fruitful / swarming / festering, `lung-capacity` = thimble / cup / quart / gallon / barrel, `fish-only` and `swamp-floor` are flags |
 | `<after-dark-phlegm>` | `modules/phlegm.js` | `behavior` = pesky / unruly / ill-mannered / horrid / atrocious / kill it!!!, `mess` = unkempt / besmirched / disquieting / nauseous / disgusting / art form / are you crazy?!, `clear-screen="no"` to let the page show through |
+| `<after-dark-guernsey>` | `modules/guernsey.js` | `flavor` = vanilla / chocolate / strawberry / blueberry / grape / banana / lemon-lime / rainbow splash / bubble gum / cinnamon / mint / tutti-frutti |
 | `<after-dark-bungee>` | `modules/bungee.js` | `jumper` = daredevil / cow / fish / random, `jumps` = one / few / many / droves / whole bunches / hundreds, `equipment` = safe / reliable / used / so - so / purfikt |
 
 The option names are the module's own, read out of its `TYPE_1000` control-panel strings.
