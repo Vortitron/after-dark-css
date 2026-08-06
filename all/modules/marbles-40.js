@@ -1,9 +1,10 @@
 /**
- * marbles-40.js - Marbles as it was rebuilt for After Dark 4.0.
+ * marbles-40.js - Marbles! as it was rebuilt for After Dark 4.0.
  *
  * Not the one most people remember. The 4.0 module is a different screensaver
  * that happens to share the name: big rendered marbles drifting and bouncing,
- * no pins and no pile. The 1992 original is modules/marbles.js.
+ * no pins and no pile. The control panel called it Marbles! (with the bang).
+ * The 1992 original is modules/marbles.js.
  *
  * MARBLES.AD is built from an Aggate class (the marble: Launch, CheckCollision,
  * TimeToCollide, TimeToEdges) and a PegSprite class (the things it bounces off,

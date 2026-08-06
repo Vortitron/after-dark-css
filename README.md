@@ -47,10 +47,11 @@ AD40/               the original modules
 Two modules called Marbles turn up, and they are different screensavers. The
 one people remember — small marbles dropping through a field of pins and
 stacking at the bottom — is `MARBLES2.AD` from 1992. After Dark 4.0 shipped a
-new `MARBLES.AD` that just drifts big rendered marbles around. Both are here.
-There is also a tilt variant of the 1992 one (`marbles-tilt.html`) that uses
-the device accelerometer so marbles fall toward true down when you rotate the
-phone and the pile sloshes instead of snapping onto a lattice.
+new `MARBLES.AD` named **Marbles!** that just drifts big rendered marbles
+around. Both are here. There is also a tilt variant of the 1992 one
+(`marbles-tilt.html`) that uses the device accelerometer so marbles fall toward
+true down when you rotate the phone and the pile sloshes instead of snapping
+onto a lattice.
 
 The CSS screensavers are self-contained pages and open straight from disk. The decoded ones fetch their artwork, so they need serving over HTTP — `python3 -m http.server` from the repo root is enough.
 

@@ -444,18 +444,17 @@
     /* `el`/`attrs` are only on the decoded ones: they are custom elements, so
        they can be embedded as themselves rather than in an iframe. */
     var SAVERS = [
+      /* Decoded modules, roughly by era, with variants kept beside their parent. */
       { name: 'Flying Toasters', file: 'all/toasters.html',        kind: 'ripped', tag: 'TOAST3.AD 1992',
         js: 'toasters', el: 'after-dark-toasters', attrs: 'art="all/art/toast3" objects="air wing"' },
       { name: 'Marbles',         file: 'all/marbles.html',         kind: 'ripped', tag: 'MARBLES2.AD 1992',
         js: 'marbles', el: 'after-dark-marbles', attrs: 'art="all/art/marbles2" pins="many" pin-size="medium" speed="medium"' },
       { name: 'Marbles (Tilt)',  file: 'all/marbles-tilt.html',    kind: 'ripped', tag: 'MARBLES2 + accel',
         js: 'marbles-tilt', el: 'after-dark-marbles-tilt', attrs: 'art="all/art/marbles2" pins="many" pin-size="medium" speed="medium"' },
-      { name: 'Aquatic Realm',   file: 'all/aqua.html',            kind: 'ripped', tag: 'Aqua.ad',
-        js: 'aqua', el: 'after-dark-aqua', attrs: 'art="all/art/aqua" creatures="14" seaweed="6"' },
       { name: 'Flocks',          file: 'all/flocks.html',          kind: 'ripped', tag: 'FLOCKS.AD 1992',
         js: 'flocks', el: 'after-dark-flocks', attrs: 'art="all/art/flocks" kind="birds" size="medium"' },
-      { name: 'Marbles',         file: 'all/marbles-40.html',      kind: 'ripped', tag: 'MARBLES.AD 4.0',
-        js: 'marbles-40', el: 'after-dark-marbles-40', attrs: 'art="all/art/marbles" count="a jar full"' },
+      { name: 'Aquatic Realm',   file: 'all/aqua.html',            kind: 'ripped', tag: 'Aqua.ad',
+        js: 'aqua', el: 'after-dark-aqua', attrs: 'art="all/art/aqua" creatures="14" seaweed="6"' },
       { name: 'Fish Pro',        file: 'all/fishpro.html',         kind: 'ripped', tag: 'FISHPRO.AD 1994',
         js: 'fishpro', el: 'after-dark-fishpro', attrs: 'art="all/art/fishpro" fish="school" sea-floor="animated"' },
       { name: 'Bugs',            file: 'all/bugs.html',            kind: 'ripped', tag: 'BUGS.AD 1994',
@@ -468,20 +467,23 @@
         js: 'toxic', el: 'after-dark-toxic', attrs: 'art="all/art/toxic" critters="fruitful" lung-capacity="quart" swamp-floor' },
       { name: 'Phlegm Boy',      file: 'all/phlegm.html',          kind: 'ripped', tag: 'PHLEGM_B.AD 1995',
         js: 'phlegm', el: 'after-dark-phlegm', attrs: 'art="all/art/phlegm_b" behavior="ill-mannered" mess="nauseous"' },
+      { name: 'Marbles!',        file: 'all/marbles-40.html',      kind: 'ripped', tag: 'MARBLES.AD 4.0',
+        js: 'marbles-40', el: 'after-dark-marbles-40', attrs: 'art="all/art/marbles" count="a jar full"' },
       { name: 'Guernsey Madness', file: 'all/guernsey.html',       kind: 'ripped', tag: 'GUERNSEY.AD 4.0',
         js: 'guernsey', el: 'after-dark-guernsey', attrs: 'art="all/art/guernsey" flavor="tutti-frutti"' },
-      { name: 'Flying Toasters', file: 'all/flying-toasters.html', kind: 'css' },
+      /* CSS recreations, A–Z. Hidden unless "Show the CSS recreations too" is on. */
+      { name: 'Bouncing Ball',   file: 'all/bouncing-ball.html',   kind: 'css' },
+      { name: 'Fade Out',        file: 'all/fade-out.html',        kind: 'css' },
       { name: 'Fish',            file: 'all/fish.html',            kind: 'css' },
+      { name: 'Flying Toasters', file: 'all/flying-toasters.html', kind: 'css' },
       { name: 'Globe',           file: 'all/globe.html',           kind: 'css' },
       { name: 'Hard Rain',       file: 'all/hard-rain.html',       kind: 'css' },
-      { name: 'Bouncing Ball',   file: 'all/bouncing-ball.html',   kind: 'css' },
-      { name: 'Warp',            file: 'all/warp.html',            kind: 'css' },
+      { name: 'Logo',            file: 'all/logo.html',            kind: 'css' },
       { name: 'Messages',        file: 'all/messages.html',        kind: 'css' },
       { name: 'Messages 2',      file: 'all/messages2.html',       kind: 'css' },
-      { name: 'Fade Out',        file: 'all/fade-out.html',        kind: 'css' },
-      { name: 'Logo',            file: 'all/logo.html',            kind: 'css' },
       { name: 'Rainstorm',       file: 'all/rainstorm.html',       kind: 'css' },
-      { name: 'Spotlight',       file: 'all/spotlight.html',       kind: 'css' }
+      { name: 'Spotlight',       file: 'all/spotlight.html',       kind: 'css' },
+      { name: 'Warp',            file: 'all/warp.html',            kind: 'css' }
     ];
 
     var list = document.getElementById('list');

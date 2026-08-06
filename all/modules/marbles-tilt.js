@@ -9,10 +9,15 @@
  *   <after-dark-marbles-tilt art="art/marbles2" pins="many"
  *     pin-size="medium" speed="medium"></after-dark-marbles-tilt>
  *
- * iOS needs a user gesture before DeviceOrientationEvent will fire; the
- * element shows a tap prompt when permission is required. Desktop falls
- * back to screen-down gravity, with the pointer offering a light tilt for
- * trying the slosh without a phone.
+ * Motion comes from DeviceMotion accelerationIncludingGravity (true down in
+ * every attitude, including upside-down). Screen-angle compensation is only
+ * applied when the *layout* is landscape — never from window.orientation alone,
+ * which still flips under an orientation lock and was sending portrait sessions
+ * into a sideways gravity frame.
+ *
+ * iOS needs a user gesture before motion events will fire; the element shows a
+ * tap prompt when permission is required. Desktop falls back to screen-down
+ * gravity, with the pointer offering a light tilt for trying the slosh.
  */
 (function () {
   'use strict';
@@ -26,52 +31,80 @@
   var PIN_DENSITY = { none: 0, few: 26000, many: 11000, lots: 5200 };
   var SPEEDS = { slow: 40, medium: 65, fast: 100 };
 
-  var GRAVITY = 340;
-  var BOUNCE = 0.55;
-  var WALL_BOUNCE = 0.35;
-  var MARBLE_BOUNCE = 0.28;
-  var FRICTION = 0.88;
-  var DAMP = 0.999;
+  var GRAVITY = 520;                   // px/s² at full tilt
+  var BOUNCE = 0.48;
+  var WALL_BOUNCE = 0.12;
+  var WALL_SLIDE = 0.985;              // keep tangential speed on walls
+  var MARBLE_BOUNCE = 0.08;
+  var MARBLE_SLIDE = 0.97;             // soft pile — little tangential glue
+  var DAMP = 0.9994;
   var PIN_HIT = 0.42;
   var MAX_TOTAL = 220;
-  var SOLVER_PASSES = 3;
+  var SOLVER_PASSES = 2;
+  var G_EARTH = 9.80665;
 
   function rand(a, b) { return a + Math.random() * (b - a); }
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
 
   /**
-   * Map deviceorientation beta/gamma (degrees) into a unit gravity vector in
-   * screen coordinates. screenAngle is screen.orientation.angle (0 / 90 /
-   * 180 / 270): the browser has already rotated the layout, so gravity must
-   * be rotated the other way to keep pointing at Earth.
+   * Layout rotation only — how the page is actually drawn, not how the phone
+   * is held. window.orientation / screen.orientation.angle can track the
+   * physical device even when auto-rotate is locked; using those on a portrait
+   * layout was the "landscape gravity on a portrait screen" bug.
    */
-  function gravityFromOrientation(beta, gamma, screenAngle) {
-    // Device frame (W3C): upright portrait → (0, 1) toward the bottom edge.
-    var dx = Math.sin((gamma || 0) * Math.PI / 180);
-    var dy = Math.sin((beta || 0) * Math.PI / 180);
-    var mag = Math.hypot(dx, dy);
-    if (mag < 0.12) {
-      // Nearly flat: keep a weak pull so marbles settle rather than float.
-      return { x: 0, y: 0.35, flat: true };
-    }
-    dx /= mag;
-    dy /= mag;
-    // Events are device-relative; the canvas is screen-relative after the
-    // browser rotates the layout, so undo screen.orientation.angle.
-    var rad = -((screenAngle || 0) * Math.PI / 180);
-    var c = Math.cos(rad), s = Math.sin(rad);
-    return { x: dx * c - dy * s, y: dx * s + dy * c, flat: false };
-  }
-
-  function screenAngle() {
+  function layoutAngle() {
+    if (typeof window === 'undefined') { return 0; }
+    if (window.innerWidth <= window.innerHeight) { return 0; }
+    var a = 90;
     if (typeof screen !== 'undefined' && screen.orientation &&
         typeof screen.orientation.angle === 'number') {
-      return screen.orientation.angle;
+      var s = screen.orientation.angle;
+      if (s === 90 || s === 270) { a = s; }
+    } else if (typeof window.orientation === 'number') {
+      if (window.orientation === 90 || window.orientation === -90 ||
+          window.orientation === 270) {
+        a = window.orientation === -90 ? 270 : window.orientation;
+      }
     }
-    if (typeof window !== 'undefined' && typeof window.orientation === 'number') {
-      return window.orientation;
+    return a;
+  }
+
+  /**
+   * Map accelerometer gravity (device frame: x right, y toward top of device)
+   * into CSS screen space (x right, y down). signX/signY absorb the iOS vs
+   * Android polarity of accelerationIncludingGravity.
+   */
+  function gravityFromAcceleration(ax, ay, signX, signY, angle) {
+    var gx = (ax || 0) * signX / G_EARTH;
+    var gy = (ay || 0) * signY / G_EARTH;
+    if (!angle) { return { x: gx, y: gy }; }
+    var rad = -(angle * Math.PI / 180);
+    var c = Math.cos(rad), s = Math.sin(rad);
+    return { x: gx * c - gy * s, y: gx * s + gy * c };
+  }
+
+  /**
+   * Fallback from deviceorientation when motion is unavailable. No layout
+   * rotation here beyond layoutAngle(); alpha is ignored so in-plane flips
+   * are imperfect — prefer accelerationIncludingGravity when possible.
+   */
+  function gravityFromOrientation(beta, gamma, angle) {
+    var dx = Math.sin((gamma || 0) * Math.PI / 180);
+    var dy = Math.sin((beta || 0) * Math.PI / 180);
+    // Upside-down portrait puts beta near ±180; fold into a continuous down.
+    if (beta != null && Math.abs(beta) > 90) {
+      dy = Math.sin((beta > 0 ? 180 - beta : -180 - beta) * Math.PI / 180);
+      // Past vertical toward inverted: pull toward the top of the device.
+      if (Math.abs(beta) > 135) { dy = -Math.abs(dy); }
     }
-    return 0;
+    var mag = Math.hypot(dx, dy);
+    if (mag < 0.12) { return { x: 0, y: 0.35 }; }
+    dx /= mag;
+    dy /= mag;
+    if (!angle) { return { x: dx, y: dy }; }
+    var rad = -(angle * Math.PI / 180);
+    var c = Math.cos(rad), s = Math.sin(rad);
+    return { x: dx * c - dy * s, y: dx * s + dy * c };
   }
 
   function MarblesTilt(art) {
@@ -94,11 +127,17 @@
     this.pinR = bm ? bm.width * PIN_HIT : 0;
   };
 
+  /** Strength follows how hard the device is tilted (not always unit). */
   MarblesTilt.prototype.setGravity = function (gx, gy) {
     var mag = Math.hypot(gx, gy);
-    if (mag < 1e-6) { this.gx = 0; this.gy = 1; return; }
-    this.gx = gx / mag;
-    this.gy = gy / mag;
+    if (mag < 0.04) {
+      this.gx = 0;
+      this.gy = 0.25;
+      return;
+    }
+    var strength = Math.min(1.15, mag);
+    this.gx = (gx / mag) * strength;
+    this.gy = (gy / mag) * strength;
   };
 
   MarblesTilt.prototype.scatter = function (w, h) {
@@ -132,10 +171,15 @@
   MarblesTilt.prototype.release = function (w, h) {
     var gx = this.gx, gy = this.gy;
     var lateral = rand(-0.42, 0.42) * Math.min(w, h);
-    var x = w / 2 - gx * (Math.max(w, h) * 0.55) + (-gy) * lateral;
-    var y = h / 2 - gy * (Math.max(w, h) * 0.55) + gx * lateral;
-    x = clamp(x, R, w - R);
-    y = clamp(y, -CELL * 2, h + CELL * 2);
+    var reach = Math.max(w, h) * 0.55;
+    var x = w / 2 - gx * reach + (-gy) * lateral;
+    var y = h / 2 - gy * reach + gx * lateral;
+    // Keep a little off-screen on the sky side; only clamp the lateral axis.
+    if (Math.abs(gx) >= Math.abs(gy)) {
+      y = clamp(y, R, h - R);
+    } else {
+      x = clamp(x, R, w - R);
+    }
     var type = Math.floor(rand(0, SMILEY + 1));
     this.marbles.push({
       type: type,
@@ -143,8 +187,8 @@
       oh: 0,
       x: x,
       y: y,
-      vx: rand(-18, 18),
-      vy: rand(-18, 18),
+      vx: rand(-22, 22),
+      vy: rand(-22, 22),
       r: R
     });
   };
@@ -172,16 +216,23 @@
       m.y += m.vy * dt;
       if (m.oh > 0) { m.oh -= dt; }
 
-      // Walls — all four, since any edge can be "the floor".
       if (m.x < m.r) {
-        m.x = m.r; m.vx = Math.abs(m.vx) * WALL_BOUNCE; m.vy *= FRICTION;
+        m.x = m.r;
+        m.vx = Math.abs(m.vx) * WALL_BOUNCE;
+        m.vy *= WALL_SLIDE;
       } else if (m.x > w - m.r) {
-        m.x = w - m.r; m.vx = -Math.abs(m.vx) * WALL_BOUNCE; m.vy *= FRICTION;
+        m.x = w - m.r;
+        m.vx = -Math.abs(m.vx) * WALL_BOUNCE;
+        m.vy *= WALL_SLIDE;
       }
       if (m.y < m.r) {
-        m.y = m.r; m.vy = Math.abs(m.vy) * WALL_BOUNCE; m.vx *= FRICTION;
+        m.y = m.r;
+        m.vy = Math.abs(m.vy) * WALL_BOUNCE;
+        m.vx *= WALL_SLIDE;
       } else if (m.y > h - m.r) {
-        m.y = h - m.r; m.vy = -Math.abs(m.vy) * WALL_BOUNCE; m.vx *= FRICTION;
+        m.y = h - m.r;
+        m.vy = -Math.abs(m.vy) * WALL_BOUNCE;
+        m.vx *= WALL_SLIDE;
       }
 
       for (j = 0; j < this.pins.length; j += 1) {
@@ -211,7 +262,6 @@
       }
     }
 
-    // Too full to see the pins — clear and start again, like the original.
     if (this.marbles.length >= MAX_TOTAL) { this.reset(w, h); }
   };
 
@@ -222,19 +272,28 @@
     if (dist >= min) { return; }
     var nx = dx / dist, ny = dy / dist;
     var overlap = min - dist;
-    var push = overlap / 2;
+    // Soft separation so the pile can shear rather than lock into a lattice.
+    var push = overlap * 0.45;
     a.x -= nx * push; a.y -= ny * push;
     b.x += nx * push; b.y += ny * push;
 
     var rvx = b.vx - a.vx, rvy = b.vy - a.vy;
     var vn = rvx * nx + rvy * ny;
-    if (vn > 0) { return; }
-    var jimp = -(1 + MARBLE_BOUNCE) * vn / 2;
-    var ix = jimp * nx, iy = jimp * ny;
-    a.vx -= ix; a.vy -= iy;
-    b.vx += ix; b.vy += iy;
-    if (a.sensitive && Math.hypot(ix, iy) > 8) { a.oh = OH; }
-    if (b.sensitive && Math.hypot(ix, iy) > 8) { b.oh = OH; }
+    if (vn < 0) {
+      var jimp = -(1 + MARBLE_BOUNCE) * vn / 2;
+      var ix = jimp * nx, iy = jimp * ny;
+      a.vx -= ix; a.vy -= iy;
+      b.vx += ix; b.vy += iy;
+      if (a.sensitive && Math.hypot(ix, iy) > 10) { a.oh = OH; }
+      if (b.sensitive && Math.hypot(ix, iy) > 10) { b.oh = OH; }
+    }
+
+    // Tangential slip — this is what makes the pile pour instead of sticking.
+    var tx = -ny, ty = nx;
+    var vt = (b.vx - a.vx) * tx + (b.vy - a.vy) * ty;
+    var slip = vt * (1 - MARBLE_SLIDE) / 2;
+    a.vx += tx * slip; a.vy += ty * slip;
+    b.vx -= tx * slip; b.vy -= ty * slip;
   };
 
   MarblesTilt.prototype.draw = function (ctx, w, h) {
@@ -296,9 +355,37 @@
 
   MarblesTiltElement.prototype._bindMotion = function (sim) {
     var self = this;
+    // Polarity of accelerationIncludingGravity differs on iOS vs Android.
+    // Calibrate once from an upright-ish sample so screen +y is "down".
+    var signX = 1, signY = 1, calibrated = false;
+
+    function calibrate(ax, ay, az) {
+      if (calibrated) { return; }
+      if (Math.abs(ay) < 6) { return; }
+      if (Math.abs(ay) < Math.abs(ax) * 1.8) { return; }
+      if (Math.abs(ay) < Math.abs(az) * 1.2) { return; }
+      // Upright: want gy > 0 (toward bottom of a portrait layout).
+      signY = ay > 0 ? 1 : -1;
+      signX = -signY;
+      calibrated = true;
+    }
+
+    function applyMotion(e) {
+      var ag = e.accelerationIncludingGravity;
+      if (!ag || (ag.x == null && ag.y == null)) { return; }
+      var ax = ag.x || 0, ay = ag.y || 0, az = ag.z || 0;
+      calibrate(ax, ay, az);
+      var g = gravityFromAcceleration(ax, ay, signX, signY, layoutAngle());
+      sim.setGravity(g.x, g.y);
+      sim.usingSensor = true;
+      self._hidePrompt();
+    }
+
     function applyOrientation(e) {
+      // Only as fallback before we have motion samples.
+      if (sim.usingSensor && calibrated) { return; }
       if (e.beta == null && e.gamma == null) { return; }
-      var g = gravityFromOrientation(e.beta, e.gamma, screenAngle());
+      var g = gravityFromOrientation(e.beta, e.gamma, layoutAngle());
       sim.setGravity(g.x, g.y);
       sim.usingSensor = true;
       self._hidePrompt();
@@ -308,14 +395,15 @@
       if (sim.usingSensor) { return; }
       var r = self.getBoundingClientRect();
       if (!r.width || !r.height) { return; }
-      // Pointer offset from centre → light tilt, for desktop try-outs.
       var nx = ((e.clientX - r.left) / r.width - 0.5) * 2;
       var ny = ((e.clientY - r.top) / r.height - 0.5) * 2;
       sim.setGravity(nx * 0.85, 1 + ny * 0.55);
     }
 
+    this._onMotion = applyMotion;
     this._onOrientation = applyOrientation;
     this._onPointer = onPointer;
+    window.addEventListener('devicemotion', applyMotion);
     window.addEventListener('deviceorientation', applyOrientation);
     this.addEventListener('pointermove', onPointer);
 
@@ -324,18 +412,12 @@
 
   MarblesTiltElement.prototype._offerMotionPermission = function (sim) {
     var self = this;
-    var needsGesture = typeof DeviceOrientationEvent !== 'undefined' &&
+    var needsOrient = typeof DeviceOrientationEvent !== 'undefined' &&
       typeof DeviceOrientationEvent.requestPermission === 'function';
+    var needsMotion = typeof DeviceMotionEvent !== 'undefined' &&
+      typeof DeviceMotionEvent.requestPermission === 'function';
 
-    if (!needsGesture && typeof window.DeviceOrientationEvent === 'undefined') {
-      return;
-    }
-
-    if (!needsGesture) {
-      // Android / desktop with the event: wait briefly; if nothing arrives,
-      // leave pointer-tilt as the fallback.
-      return;
-    }
+    if (!needsOrient && !needsMotion) { return; }
 
     var prompt = document.createElement('button');
     prompt.type = 'button';
@@ -350,8 +432,16 @@
     this._prompt = prompt;
 
     prompt.addEventListener('click', function () {
-      DeviceOrientationEvent.requestPermission().then(function (state) {
-        if (state === 'granted') {
+      var tasks = [];
+      if (needsMotion) {
+        tasks.push(DeviceMotionEvent.requestPermission());
+      }
+      if (needsOrient) {
+        tasks.push(DeviceOrientationEvent.requestPermission());
+      }
+      Promise.all(tasks).then(function (states) {
+        var ok = states.some(function (s) { return s === 'granted'; });
+        if (ok) {
           sim.usingSensor = true;
           self._hidePrompt();
         } else {
@@ -371,6 +461,10 @@
   };
 
   MarblesTiltElement.prototype.disconnectedCallback = function () {
+    if (this._onMotion) {
+      window.removeEventListener('devicemotion', this._onMotion);
+      this._onMotion = null;
+    }
     if (this._onOrientation) {
       window.removeEventListener('deviceorientation', this._onOrientation);
       this._onOrientation = null;
@@ -385,17 +479,19 @@
 
   customElements.define('after-dark-marbles-tilt', MarblesTiltElement);
   window.AfterDarkMarblesTilt = MarblesTilt;
+  window.AfterDarkMarblesTilt.gravityFromAcceleration = gravityFromAcceleration;
   window.AfterDarkMarblesTilt.gravityFromOrientation = gravityFromOrientation;
+  window.AfterDarkMarblesTilt.layoutAngle = layoutAngle;
 
-  // Lightweight checks for the orientation → gravity mapping.
   (function selftest() {
-    var upright = gravityFromOrientation(90, 0, 0);
-    console.assert(Math.abs(upright.x) < 0.05 && upright.y > 0.95, 'upright → +y');
-    var tipRight = gravityFromOrientation(90, 45, 0);
-    console.assert(tipRight.x > 0.3 && tipRight.y > 0.3, 'tip right → +x/+y');
-    // Landscape hold: sensors say −x in device frame, layout is rotated 90°.
-    var landscape = gravityFromOrientation(0, -90, 90);
-    console.assert(Math.abs(landscape.x) < 0.05 && landscape.y > 0.95,
-      'landscape hold → +y on screen');
+    var upright = gravityFromAcceleration(0, 9.8, -1, 1, 0);
+    console.assert(Math.abs(upright.x) < 0.05 && upright.y > 0.95, 'android upright');
+    var iosUp = gravityFromAcceleration(0, -9.8, 1, -1, 0);
+    console.assert(Math.abs(iosUp.x) < 0.05 && iosUp.y > 0.95, 'ios upright');
+    var inverted = gravityFromAcceleration(0, -9.8, -1, 1, 0);
+    console.assert(inverted.y < -0.95, 'android upside-down → −y');
+    var portraitLocked = gravityFromAcceleration(9.8, 0, -1, 1, 0);
+    console.assert(portraitLocked.x < -0.95 && Math.abs(portraitLocked.y) < 0.05,
+      'physical landscape, portrait layout → −x (no false 90° compensate)');
   }());
 }());
