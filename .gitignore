@@ -3,3 +3,8 @@ extracted
 sprites
 __pycache__/
 *.pyc
+
+# Original After Dark install trees — needed locally for the extract tools,
+# but they are tens of megabytes of binaries and must not ship on GitHub Pages
+# (they make the Pages build fail / time out).
+AD40/

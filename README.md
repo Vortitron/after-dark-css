@@ -41,7 +41,8 @@ all/ad.js           loads decoded artwork and runs the animation loop
 all/modules/*.js    what each screensaver actually does
 all/art/<module>/   artwork + index.json, from tools/adweb.py or adclassic.py
 tools/              extraction, decoding, emulation
-AD40/               the original modules
+AD40/               the original modules (local only — gitignored so GitHub Pages
+                    does not try to publish ~80 MB of binaries and time out)
 ```
 
 Two modules called Marbles turn up, and they are different screensavers. The
