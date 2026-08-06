@@ -6,7 +6,7 @@
   <title>After Dark in the Browser</title>
   <meta name="description" content="After Dark screensavers running in the browser — the CSS recreations, plus new ones built from artwork decoded straight out of the original Windows modules.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="img/favicon.png" />
+  <link rel="shortcut icon" href="img/favicon.png?v=18a3224-260806094623" />
   <style>
     /* ------------------------------------------------------------------
        Windows 95 Display Properties, which is where After Dark 4.0 for
@@ -354,7 +354,7 @@
 
   <div class="window">
     <div class="titlebar">
-      <img src="img/after-dark-icon.png" alt="" width="16" height="16">
+      <img src="img/after-dark-icon.png?v=18a3224-260806094623" alt="" width="16" height="16">
       <span class="grow">Display Properties</span>
       <span class="btn out" aria-hidden="true">_</span>
       <span class="btn out" aria-hidden="true">&#9633;</span>
@@ -434,11 +434,16 @@
 
   <div class="taskbar">
     <a class="start" href="https://github.com/Vortitron/after-dark-css">
-      <img src="img/favicon.png" alt="" width="14" height="14"> Source
+      <img src="img/favicon.png?v=18a3224-260806094623" alt="" width="14" height="14"> Source
     </a>
     <span>After Dark &copy; 1989&ndash;1998 Berkeley Systems</span>
+    <span class="tray" id="build" title="Build stamp — bumps when GitHub Pages is updated">…</span>
     <span class="tray" id="clock">--:--</span>
   </div>
+
+  <!-- ad-build -->
+  <script>window.AFTER_DARK_BUILD = {"rev": "18a3224", "time": "2026-08-06T09:46:23Z", "label": "06 Aug 09:46 UTC", "v": "18a3224-260806094623"};</script>
+  <!-- /ad-build -->
 
   <script>
     /* `el`/`attrs` are only on the decoded ones: they are custom elements, so
@@ -601,6 +606,10 @@
       Object.keys(chosen).forEach(function (k) {
         parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(chosen[k]));
       });
+      var b = window.AFTER_DARK_BUILD;
+      if (b && (b.v || b.rev)) {
+        parts.push('v=' + encodeURIComponent(b.v || b.rev));
+      }
       return parts.length ? saver.file + '?' + parts.join('&') : saver.file;
     }
 
@@ -971,6 +980,16 @@
     }
     tick();
     setInterval(tick, 20000);
+
+    (function showBuild() {
+      var b = window.AFTER_DARK_BUILD || {};
+      var el = document.getElementById('build');
+      if (!el) { return; }
+      el.textContent = (b.rev || '?') + ' · ' + (b.label || b.time || '');
+      el.title = 'Build ' + (b.v || b.rev || '') +
+        (b.time ? ' at ' + b.time : '') +
+        ' — hard-refresh if this does not change after a push';
+    }());
 
     render();
     select(0);

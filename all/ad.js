@@ -161,18 +161,41 @@
     return v !== null && v !== 'no' && v !== 'off' && v !== 'false';
   }
 
+  /** Cache-bust a URL from ?v= on the page, or window.AFTER_DARK_BUILD.v. */
+  function buildId() {
+    var search = (global.location && global.location.search) || '';
+    if (search) {
+      var parts = search.slice(1).split('&');
+      for (var i = 0; i < parts.length; i += 1) {
+        var eq = parts[i].indexOf('=');
+        var key = eq < 0 ? parts[i] : parts[i].slice(0, eq);
+        if (decodeURIComponent(key) === 'v') {
+          return eq < 0 ? '' : decodeURIComponent(parts[i].slice(eq + 1));
+        }
+      }
+    }
+    var b = global.AFTER_DARK_BUILD;
+    return (b && (b.v || b.rev)) || '';
+  }
+
+  function bust(url) {
+    var v = buildId();
+    if (!v || !url) { return url; }
+    return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'v=' + encodeURIComponent(v);
+  }
+
   function loadImage(src) {
     return new Promise(function (resolve, reject) {
       var im = new Image();
       im.onload = function () { resolve(im); };
       im.onerror = function () { reject(new Error('could not load ' + src)); };
-      im.src = src;
+      im.src = bust(src);
     });
   }
 
   function load(base) {
     base = base.replace(/\/$/, '');
-    return fetch(base + '/index.json').then(function (r) {
+    return fetch(bust(base + '/index.json'), { cache: 'no-cache' }).then(function (r) {
       if (!r.ok) { throw new Error('no manifest at ' + base); }
       return r.json();
     }).then(function (manifest) {
@@ -242,6 +265,6 @@
 
   global.AfterDark = {
     load: load, Screen: Screen, Sequence: Sequence, Bitmap: Bitmap,
-    setting: setting, flag: flag
+    setting: setting, flag: flag, bust: bust, buildId: buildId
   };
 }(window));

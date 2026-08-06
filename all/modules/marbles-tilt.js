@@ -70,33 +70,50 @@
   }
 
   /**
-   * Map accelerometer gravity (device frame: x right, y toward top of device)
-   * into CSS screen space (x right, y down). signX/signY absorb the iOS vs
-   * Android polarity of accelerationIncludingGravity.
+   * Map accelerationIncludingGravity into CSS screen space (x right, y down).
+   *
+   * Chrome on Android reports the support force (points "up" when at rest), so
+   * earth is the opposite: screen = (-ax, ay). iOS historically reports the
+   * other way: screen = (ax, -ay). No one-shot calibration — that was locking
+   * the wrong polarity from an early sample and then pulling marbles to the
+   * *top* of the screen once the phone was upright.
    */
-  function gravityFromAcceleration(ax, ay, signX, signY, angle) {
-    var gx = (ax || 0) * signX / G_EARTH;
-    var gy = (ay || 0) * signY / G_EARTH;
+  function gravityFromAcceleration(ax, ay, angle) {
+    var gx, gy;
+    if (isAppleTouch() || gravFlip()) {
+      gx = (ax || 0) / G_EARTH;
+      gy = -(ay || 0) / G_EARTH;
+    } else {
+      // Android / desktop Chrome — ag points "up" at rest.
+      gx = -(ax || 0) / G_EARTH;
+      gy = (ay || 0) / G_EARTH;
+    }
     if (!angle) { return { x: gx, y: gy }; }
     var rad = -(angle * Math.PI / 180);
     var c = Math.cos(rad), s = Math.sin(rad);
     return { x: gx * c - gy * s, y: gx * s + gy * c };
   }
 
+  function isAppleTouch() {
+    if (typeof navigator === 'undefined') { return false; }
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) { return true; }
+    return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+  }
+
+  /** Escape hatch: ?flip=1 on the page URL inverts the accel mapping. */
+  function gravFlip() {
+    var s = (typeof location !== 'undefined' && location.search) || '';
+    return /(?:\?|&)flip(?:=|&|$)/.test(s) && !/(?:\?|&)flip=(?:0|no|off|false)/.test(s);
+  }
+
   /**
-   * Fallback from deviceorientation when motion is unavailable. No layout
-   * rotation here beyond layoutAngle(); alpha is ignored so in-plane flips
-   * are imperfect — prefer accelerationIncludingGravity when possible.
+   * Fallback from deviceorientation when motion is unavailable.
+   * Keep it simple: sin(gamma)/sin(beta), no upside-down hacks that invert
+   * normal holds. Motion is preferred on Android.
    */
   function gravityFromOrientation(beta, gamma, angle) {
     var dx = Math.sin((gamma || 0) * Math.PI / 180);
     var dy = Math.sin((beta || 0) * Math.PI / 180);
-    // Upside-down portrait puts beta near ±180; fold into a continuous down.
-    if (beta != null && Math.abs(beta) > 90) {
-      dy = Math.sin((beta > 0 ? 180 - beta : -180 - beta) * Math.PI / 180);
-      // Past vertical toward inverted: pull toward the top of the device.
-      if (Math.abs(beta) > 135) { dy = -Math.abs(dy); }
-    }
     var mag = Math.hypot(dx, dy);
     if (mag < 0.12) { return { x: 0, y: 0.35 }; }
     dx /= mag;
@@ -355,59 +372,156 @@
 
   MarblesTiltElement.prototype._bindMotion = function (sim) {
     var self = this;
-    // Polarity of accelerationIncludingGravity differs on iOS vs Android.
-    // Calibrate once from an upright-ish sample so screen +y is "down".
-    var signX = 1, signY = 1, calibrated = false;
-
-    function calibrate(ax, ay, az) {
-      if (calibrated) { return; }
-      if (Math.abs(ay) < 6) { return; }
-      if (Math.abs(ay) < Math.abs(ax) * 1.8) { return; }
-      if (Math.abs(ay) < Math.abs(az) * 1.2) { return; }
-      // Upright: want gy > 0 (toward bottom of a portrait layout).
-      signY = ay > 0 ? 1 : -1;
-      signX = -signY;
-      calibrated = true;
-    }
+    var SENSOR_WAIT = 1400;
+    // Once DeviceMotion has delivered a real sample, ignore orientation —
+    // the two APIs were fighting and orientation was winning with a bad frame.
+    var motionLive = false;
 
     function applyMotion(e) {
+      if (self._cowDragging || self._cowTouched) { return; }
       var ag = e.accelerationIncludingGravity;
       if (!ag || (ag.x == null && ag.y == null)) { return; }
       var ax = ag.x || 0, ay = ag.y || 0, az = ag.z || 0;
-      calibrate(ax, ay, az);
-      var g = gravityFromAcceleration(ax, ay, signX, signY, layoutAngle());
+      if (Math.sqrt(ax * ax + ay * ay + az * az) < 2) { return; }
+      var g = gravityFromAcceleration(ax, ay, layoutAngle());
       sim.setGravity(g.x, g.y);
       sim.usingSensor = true;
+      motionLive = true;
       self._hidePrompt();
+      self._hideCow();
     }
 
     function applyOrientation(e) {
-      // Only as fallback before we have motion samples.
-      if (sim.usingSensor && calibrated) { return; }
+      if (motionLive || self._cowDragging || self._cowTouched) { return; }
       if (e.beta == null && e.gamma == null) { return; }
       var g = gravityFromOrientation(e.beta, e.gamma, layoutAngle());
       sim.setGravity(g.x, g.y);
       sim.usingSensor = true;
       self._hidePrompt();
-    }
-
-    function onPointer(e) {
-      if (sim.usingSensor) { return; }
-      var r = self.getBoundingClientRect();
-      if (!r.width || !r.height) { return; }
-      var nx = ((e.clientX - r.left) / r.width - 0.5) * 2;
-      var ny = ((e.clientY - r.top) / r.height - 0.5) * 2;
-      sim.setGravity(nx * 0.85, 1 + ny * 0.55);
+      self._hideCow();
     }
 
     this._onMotion = applyMotion;
     this._onOrientation = applyOrientation;
-    this._onPointer = onPointer;
     window.addEventListener('devicemotion', applyMotion);
     window.addEventListener('deviceorientation', applyOrientation);
-    this.addEventListener('pointermove', onPointer);
 
     this._offerMotionPermission(sim);
+    this._sensorTimer = setTimeout(function () {
+      if (!sim.usingSensor) { self._showCow(sim); }
+    }, SENSOR_WAIT);
+  };
+
+  /**
+   * Bungee cow as a drag-tilt joystick when the device has no accelerometer
+   * (desktop), or motion never arrives. Drag her around the screen — gravity
+   * points from the centre toward the cow.
+   */
+  MarblesTiltElement.prototype._cowSrc = function () {
+    var art = this.getAttribute('art') || '';
+    var raw = this.getAttribute('cow') ||
+      (art.indexOf('all/') === 0 ? 'img/bungee-cow.png' : '../img/bungee-cow.png');
+    return window.AfterDark && AfterDark.bust ? AfterDark.bust(raw) : raw;
+  };
+
+  MarblesTiltElement.prototype._showCow = function (sim) {
+    if (this._cow) { return; }
+    var self = this;
+    var cow = document.createElement('img');
+    cow.src = this._cowSrc();
+    cow.alt = 'Drag the cow to tilt';
+    cow.title = 'Drag the cow to tilt gravity';
+    cow.draggable = false;
+    cow.setAttribute('role', 'slider');
+    cow.setAttribute('aria-label', 'Tilt control — drag the cow');
+    cow.style.cssText =
+      'position:absolute;width:42px;height:auto;image-rendering:pixelated;' +
+      'left:50%;top:72%;transform:translate(-50%,-50%);z-index:3;' +
+      'cursor:grab;touch-action:none;user-select:none;-webkit-user-drag:none;' +
+      'filter:drop-shadow(0 2px 0 #0008)';
+    this.appendChild(cow);
+    this._cow = cow;
+    this._cowTouched = false;
+
+    var hint = document.createElement('div');
+    hint.textContent = 'Drag the cow to tilt';
+    hint.style.cssText =
+      'position:absolute;left:50%;bottom:4%;transform:translateX(-50%);' +
+      'z-index:2;color:#e8e0c8;font:600 12px/1.2 ui-sans-serif,system-ui,sans-serif;' +
+      'text-shadow:0 1px 0 #000;pointer-events:none;white-space:nowrap';
+    this.appendChild(hint);
+    this._cowHint = hint;
+
+    function setFromPointer(clientX, clientY) {
+      var r = self.getBoundingClientRect();
+      if (!r.width || !r.height) { return; }
+      var px = clientX - r.left;
+      var py = clientY - r.top;
+      cow.style.left = px + 'px';
+      cow.style.top = py + 'px';
+      cow.style.transform = 'translate(-50%,-50%)';
+      // Vector from centre → cow = gravity (screen y grows downward).
+      var gx = (px / r.width - 0.5) * 2;
+      var gy = (py / r.height - 0.5) * 2;
+      // Keep a little pull even near the centre so marbles do not float.
+      if (Math.hypot(gx, gy) < 0.12) { gx = 0; gy = 0.35; }
+      sim.setGravity(gx, gy);
+    }
+
+    function onDown(e) {
+      e.preventDefault();
+      cow.style.cursor = 'grabbing';
+      self._cowDragging = true;
+      self._cowTouched = true;
+      hint.style.opacity = '0';
+      var pt = e.touches ? e.touches[0] : e;
+      setFromPointer(pt.clientX, pt.clientY);
+    }
+    function onMove(e) {
+      if (!self._cowDragging) { return; }
+      e.preventDefault();
+      var pt = e.touches ? e.touches[0] : e;
+      setFromPointer(pt.clientX, pt.clientY);
+    }
+    function onUp() {
+      self._cowDragging = false;
+      cow.style.cursor = 'grab';
+    }
+
+    cow.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    this._cowOnMove = onMove;
+    this._cowOnUp = onUp;
+
+    // Park her a little below centre so default gravity is "down".
+    var r = this.getBoundingClientRect();
+    if (r.width) {
+      setFromPointer(r.left + r.width * 0.5, r.top + r.height * 0.72);
+    }
+  };
+
+  MarblesTiltElement.prototype._hideCow = function () {
+    if (this._cowDragging) { return; }
+    this._cowTouched = false;
+    if (this._cowOnMove) {
+      window.removeEventListener('pointermove', this._cowOnMove);
+      this._cowOnMove = null;
+    }
+    if (this._cowOnUp) {
+      window.removeEventListener('pointerup', this._cowOnUp);
+      window.removeEventListener('pointercancel', this._cowOnUp);
+      this._cowOnUp = null;
+    }
+    if (this._cow && this._cow.parentNode) {
+      this._cow.parentNode.removeChild(this._cow);
+    }
+    this._cow = null;
+    if (this._cowHint && this._cowHint.parentNode) {
+      this._cowHint.parentNode.removeChild(this._cowHint);
+    }
+    this._cowHint = null;
   };
 
   MarblesTiltElement.prototype._offerMotionPermission = function (sim) {
@@ -417,6 +531,7 @@
     var needsMotion = typeof DeviceMotionEvent !== 'undefined' &&
       typeof DeviceMotionEvent.requestPermission === 'function';
 
+    // Android Chrome does not need a gesture; only iOS does.
     if (!needsOrient && !needsMotion) { return; }
 
     var prompt = document.createElement('button');
@@ -442,13 +557,14 @@
       Promise.all(tasks).then(function (states) {
         var ok = states.some(function (s) { return s === 'granted'; });
         if (ok) {
-          sim.usingSensor = true;
           self._hidePrompt();
         } else {
           prompt.textContent = 'Motion permission denied';
+          self._showCow(sim);
         }
       }).catch(function () {
         prompt.textContent = 'Motion unavailable';
+        self._showCow(sim);
       });
     });
   };
@@ -461,6 +577,10 @@
   };
 
   MarblesTiltElement.prototype.disconnectedCallback = function () {
+    if (this._sensorTimer) {
+      clearTimeout(this._sensorTimer);
+      this._sensorTimer = 0;
+    }
     if (this._onMotion) {
       window.removeEventListener('devicemotion', this._onMotion);
       this._onMotion = null;
@@ -469,10 +589,7 @@
       window.removeEventListener('deviceorientation', this._onOrientation);
       this._onOrientation = null;
     }
-    if (this._onPointer) {
-      this.removeEventListener('pointermove', this._onPointer);
-      this._onPointer = null;
-    }
+    this._hideCow();
     this._hidePrompt();
     if (this._screen) { this._screen.stop(); this._screen = null; }
   };
@@ -484,14 +601,12 @@
   window.AfterDarkMarblesTilt.layoutAngle = layoutAngle;
 
   (function selftest() {
-    var upright = gravityFromAcceleration(0, 9.8, -1, 1, 0);
+    // Android upright: ag ≈ (0, +9.8, 0) → screen down.
+    var upright = gravityFromAcceleration(0, 9.8, 0);
     console.assert(Math.abs(upright.x) < 0.05 && upright.y > 0.95, 'android upright');
-    var iosUp = gravityFromAcceleration(0, -9.8, 1, -1, 0);
-    console.assert(Math.abs(iosUp.x) < 0.05 && iosUp.y > 0.95, 'ios upright');
-    var inverted = gravityFromAcceleration(0, -9.8, -1, 1, 0);
+    var inverted = gravityFromAcceleration(0, -9.8, 0);
     console.assert(inverted.y < -0.95, 'android upside-down → −y');
-    var portraitLocked = gravityFromAcceleration(9.8, 0, -1, 1, 0);
-    console.assert(portraitLocked.x < -0.95 && Math.abs(portraitLocked.y) < 0.05,
-      'physical landscape, portrait layout → −x (no false 90° compensate)');
+    var tipRight = gravityFromAcceleration(-9.8, 0, 0);
+    console.assert(tipRight.x > 0.95, 'android tip-right → +x');
   }());
 }());

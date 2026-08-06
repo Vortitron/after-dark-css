@@ -55,6 +55,8 @@ onto a lattice.
 
 The CSS screensavers are self-contained pages and open straight from disk. The decoded ones fetch their artwork, so they need serving over HTTP — `python3 -m http.server` from the repo root is enough.
 
+Before pushing to GitHub Pages, run `tools/stamp.sh`. That writes a build id into the fake taskbar tray (next to the clock) and appends `?v=…` cache-busters on scripts, styles and iframe URLs so phones pick up the new bits instead of a stale cache.
+
 ## Embedding one
 
 Every screensaver here is a page in its own right, so the way that works anywhere is an iframe:
