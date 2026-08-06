@@ -1,0 +1,42 @@
+# Static site publish. Avoids the flaky default "pages build and deployment"
+# path that has been timing out on Deploy to GitHub Pages.
+name: pages
+on:
+  push:
+    branches: [gh-pages]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Pack site
+        run: |
+          mkdir -p _site
+          # Only the bits the browser needs — not tools/ or local AD40 leftovers.
+          cp -a index.html build.js build.json .nojekyll _site/ 2>/dev/null || true
+          cp -a all img fonts _site/
+          # Drop anything accidentally huge
+          find _site -type f -size +5M -print -delete || true
+          du -sh _site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
