@@ -236,9 +236,15 @@
 
   Screen.prototype.resize = function () {
     var dpr = global.devicePixelRatio || 1;
-    var r = this.host.getBoundingClientRect();
-    this.width = Math.max(1, Math.round(r.width));
-    this.height = Math.max(1, Math.round(r.height));
+    var w = this.host.clientWidth;
+    var h = this.host.clientHeight;
+    if (!w || !h) {
+      var r = this.host.getBoundingClientRect();
+      w = Math.round(r.width);
+      h = Math.round(r.height);
+    }
+    this.width = Math.max(1, w);
+    this.height = Math.max(1, h);
     this.canvas.width = Math.round(this.width * dpr);
     this.canvas.height = Math.round(this.height * dpr);
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

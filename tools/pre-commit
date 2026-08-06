@@ -1,0 +1,6 @@
+#!/bin/sh
+# Installed by tools/install-hooks.sh — stamps a build id into the commit.
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT" || exit 1
+./tools/stamp.sh
+git add build.json build.js index.html all/*.html 2>/dev/null || true

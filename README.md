@@ -55,7 +55,15 @@ onto a lattice.
 
 The CSS screensavers are self-contained pages and open straight from disk. The decoded ones fetch their artwork, so they need serving over HTTP — `python3 -m http.server` from the repo root is enough.
 
-Before pushing to GitHub Pages, run `tools/stamp.sh`. That writes a build id into the fake taskbar tray (next to the clock) and appends `?v=…` cache-busters on scripts, styles and iframe URLs so phones pick up the new bits instead of a stale cache.
+Before pushing to GitHub Pages, the build stamp in the taskbar needs a bump so
+phones drop their cache. You do not have to run that by hand: once, run
+
+```
+tools/install-hooks.sh
+```
+
+and every `git commit` will stamp `build.json` / `?v=…` cache-busters for you.
+`tools/stamp.sh` is still there if you want to stamp without committing.
 
 ## Embedding one
 

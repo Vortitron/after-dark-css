@@ -2,22 +2,16 @@
  * marbles-tilt.js - Marbles with accelerometer gravity.
  *
  * Same 1992 MARBLES2 artwork and pins as modules/marbles.js, but gravity
- * follows the device: on a phone the marbles fall toward true down when you
- * rotate or tilt, and the pile at the bottom is a free-body stack that
- * sloshes instead of snapping onto the original lattice.
+ * follows the device when the saver is immersive (fullscreen / its own tab).
+ * In the little Display Properties preview it stays screen-down so the
+ * monitor is not pulled sideways by the phone's tilt.
+ *
+ * Manual controls (always available when immersive):
+ *   - bungee cow on a short rope in the corner — drag to tilt
+ *   - arrow keys nudge gravity the same way
  *
  *   <after-dark-marbles-tilt art="art/marbles2" pins="many"
  *     pin-size="medium" speed="medium"></after-dark-marbles-tilt>
- *
- * Motion comes from DeviceMotion accelerationIncludingGravity (true down in
- * every attitude, including upside-down). Screen-angle compensation is only
- * applied when the *layout* is landscape — never from window.orientation alone,
- * which still flips under an orientation lock and was sending portrait sessions
- * into a sideways gravity frame.
- *
- * iOS needs a user gesture before motion events will fire; the element shows a
- * tap prompt when permission is required. Desktop falls back to screen-down
- * gravity, with the pointer offering a light tilt for trying the slosh.
  */
 (function () {
   'use strict';
@@ -31,97 +25,58 @@
   var PIN_DENSITY = { none: 0, few: 26000, many: 11000, lots: 5200 };
   var SPEEDS = { slow: 40, medium: 65, fast: 100 };
 
-  var GRAVITY = 520;                   // px/s² at full tilt
+  var GRAVITY = 520;
   var BOUNCE = 0.48;
   var WALL_BOUNCE = 0.12;
-  var WALL_SLIDE = 0.985;              // keep tangential speed on walls
+  var WALL_SLIDE = 0.985;
   var MARBLE_BOUNCE = 0.08;
-  var MARBLE_SLIDE = 0.97;             // soft pile — little tangential glue
+  var MARBLE_SLIDE = 0.97;
   var DAMP = 0.9994;
   var PIN_HIT = 0.42;
   var MAX_TOTAL = 220;
   var SOLVER_PASSES = 2;
   var G_EARTH = 9.80665;
+  var ROPE_LEN = 78;
+  var KEY_STEP = 0.08;
 
   function rand(a, b) { return a + Math.random() * (b - a); }
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
 
-  /**
-   * Layout rotation only — how the page is actually drawn, not how the phone
-   * is held. window.orientation / screen.orientation.angle can track the
-   * physical device even when auto-rotate is locked; using those on a portrait
-   * layout was the "landscape gravity on a portrait screen" bug.
-   */
-  function layoutAngle() {
-    if (typeof window === 'undefined') { return 0; }
-    if (window.innerWidth <= window.innerHeight) { return 0; }
-    var a = 90;
-    if (typeof screen !== 'undefined' && screen.orientation &&
-        typeof screen.orientation.angle === 'number') {
-      var s = screen.orientation.angle;
-      if (s === 90 || s === 270) { a = s; }
-    } else if (typeof window.orientation === 'number') {
-      if (window.orientation === 90 || window.orientation === -90 ||
-          window.orientation === 270) {
-        a = window.orientation === -90 ? 270 : window.orientation;
-      }
-    }
-    return a;
+  /** True when this saver fills most of the window (not the 4:3 preview). */
+  function isImmersive(el) {
+    if (typeof window === 'undefined') { return true; }
+    var r = el.getBoundingClientRect();
+    return r.width >= window.innerWidth * 0.55 &&
+      r.height >= window.innerHeight * 0.55;
   }
 
   /**
-   * Map accelerationIncludingGravity into CSS screen space (x right, y down).
+   * Map accelerationIncludingGravity → CSS screen gravity (y down).
+   * `invert` flips both axes — used when a device reports the other polarity,
+   * and when auto-rotate would otherwise leave portrait pulling "up".
    *
-   * Chrome on Android reports the support force (points "up" when at rest), so
-   * earth is the opposite: screen = (-ax, ay). iOS historically reports the
-   * other way: screen = (ax, -ay). No one-shot calibration — that was locking
-   * the wrong polarity from an early sample and then pulling marbles to the
-   * *top* of the screen once the phone was upright.
+   * No screen.orientation.angle compensation: that fought auto-rotate. The
+   * accelerometer is read in device space and we only trust it while
+   * immersive; layout changes reset via resize.
    */
-  function gravityFromAcceleration(ax, ay, angle) {
-    var gx, gy;
-    if (isAppleTouch() || gravFlip()) {
-      gx = (ax || 0) / G_EARTH;
-      gy = -(ay || 0) / G_EARTH;
-    } else {
-      // Android / desktop Chrome — ag points "up" at rest.
-      gx = -(ax || 0) / G_EARTH;
-      gy = (ay || 0) / G_EARTH;
-    }
-    if (!angle) { return { x: gx, y: gy }; }
-    var rad = -(angle * Math.PI / 180);
-    var c = Math.cos(rad), s = Math.sin(rad);
-    return { x: gx * c - gy * s, y: gx * s + gy * c };
+  function gravityFromAcceleration(ax, ay, invert) {
+    // Support-force convention (common on Android): earth ≈ −ag, screen y-down
+    // means (gx, gy) = (−ax, ay). Invert covers the other polarity / bad holds.
+    var gx = -(ax || 0) / G_EARTH;
+    var gy = (ay || 0) / G_EARTH;
+    if (invert) { gx = -gx; gy = -gy; }
+    return { x: gx, y: gy };
   }
 
-  function isAppleTouch() {
-    if (typeof navigator === 'undefined') { return false; }
-    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) { return true; }
-    return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-  }
-
-  /** Escape hatch: ?flip=1 on the page URL inverts the accel mapping. */
-  function gravFlip() {
-    var s = (typeof location !== 'undefined' && location.search) || '';
-    return /(?:\?|&)flip(?:=|&|$)/.test(s) && !/(?:\?|&)flip=(?:0|no|off|false)/.test(s);
-  }
-
-  /**
-   * Fallback from deviceorientation when motion is unavailable.
-   * Keep it simple: sin(gamma)/sin(beta), no upside-down hacks that invert
-   * normal holds. Motion is preferred on Android.
-   */
-  function gravityFromOrientation(beta, gamma, angle) {
+  function gravityFromOrientation(beta, gamma, invert) {
     var dx = Math.sin((gamma || 0) * Math.PI / 180);
     var dy = Math.sin((beta || 0) * Math.PI / 180);
     var mag = Math.hypot(dx, dy);
     if (mag < 0.12) { return { x: 0, y: 0.35 }; }
     dx /= mag;
     dy /= mag;
-    if (!angle) { return { x: dx, y: dy }; }
-    var rad = -(angle * Math.PI / 180);
-    var c = Math.cos(rad), s = Math.sin(rad);
-    return { x: dx * c - dy * s, y: dx * s + dy * c };
+    if (invert) { dx = -dx; dy = -dy; }
+    return { x: dx, y: dy };
   }
 
   function MarblesTilt(art) {
@@ -144,7 +99,6 @@
     this.pinR = bm ? bm.width * PIN_HIT : 0;
   };
 
-  /** Strength follows how hard the device is tilted (not always unit). */
   MarblesTilt.prototype.setGravity = function (gx, gy) {
     var mag = Math.hypot(gx, gy);
     if (mag < 0.04) {
@@ -184,14 +138,12 @@
     this.spawn = 0;
   };
 
-  /** Drop a marble from the edge opposite gravity ("the sky"). */
   MarblesTilt.prototype.release = function (w, h) {
     var gx = this.gx, gy = this.gy;
     var lateral = rand(-0.42, 0.42) * Math.min(w, h);
     var reach = Math.max(w, h) * 0.55;
     var x = w / 2 - gx * reach + (-gy) * lateral;
     var y = h / 2 - gy * reach + gx * lateral;
-    // Keep a little off-screen on the sky side; only clamp the lateral axis.
     if (Math.abs(gx) >= Math.abs(gy)) {
       y = clamp(y, R, h - R);
     } else {
@@ -208,6 +160,11 @@
       vy: rand(-22, 22),
       r: R
     });
+  };
+
+  MarblesTilt.prototype.clampMarble = function (m, w, h) {
+    m.x = clamp(m.x, m.r, w - m.r);
+    m.y = clamp(m.y, m.r, h - m.r);
   };
 
   MarblesTilt.prototype.step = function (dt, w, h) {
@@ -279,6 +236,12 @@
       }
     }
 
+    // Solver soft-pushes can sneak past the floor — clamp hard so landscape
+    // does not leak marbles off the bottom of the visible canvas.
+    for (i = 0; i < this.marbles.length; i += 1) {
+      this.clampMarble(this.marbles[i], w, h);
+    }
+
     if (this.marbles.length >= MAX_TOTAL) { this.reset(w, h); }
   };
 
@@ -289,7 +252,6 @@
     if (dist >= min) { return; }
     var nx = dx / dist, ny = dy / dist;
     var overlap = min - dist;
-    // Soft separation so the pile can shear rather than lock into a lattice.
     var push = overlap * 0.45;
     a.x -= nx * push; a.y -= ny * push;
     b.x += nx * push; b.y += ny * push;
@@ -305,7 +267,6 @@
       if (b.sensitive && Math.hypot(ix, iy) > 10) { b.oh = OH; }
     }
 
-    // Tangential slip — this is what makes the pile pour instead of sticking.
     var tx = -ny, ty = nx;
     var vt = (b.vx - a.vx) * tx + (b.vy - a.vy) * ty;
     var slip = vt * (1 - MARBLE_SLIDE) / 2;
@@ -343,6 +304,7 @@
     this.style.display = this.style.display || 'block';
     this.style.background = '#000';
     this.style.position = this.style.position || 'relative';
+    this.tabIndex = 0; // so arrow keys can target us
 
     window.AfterDark.load(base).then(function (art) {
       var sim = new MarblesTilt(art);
@@ -357,66 +319,101 @@
       var screen = new AfterDark.Screen(self);
       self._screen = screen;
       self.sim = sim;
-      screen.onresize = function (w, h) { sim.reset(w, h); };
+      self._invert = /(?:\?|&)flip(?:=|&|$)/.test(location.search || '');
+      self._upFrames = 0;
+
+      screen.onresize = function (w, h) {
+        sim.reset(w, h);
+        self._placeCowRest();
+        self._syncControls(sim);
+      };
       sim.reset(screen.width, screen.height);
 
-      self._bindMotion(sim);
+      self._syncControls(sim);
+
       screen.run(function (dt, ctx, w, h) {
         sim.step(dt, w, h);
         sim.draw(ctx, w, h);
+        self._drawRope();
       });
     }).catch(function (err) {
       self.textContent = err.message;
     });
   };
 
+  MarblesTiltElement.prototype._syncControls = function (sim) {
+    if (isImmersive(this)) {
+      this._bindMotion(sim);
+      this._showCow(sim);
+      this._bindKeys(sim);
+    } else {
+      this._unbindMotion();
+      this._hideCow();
+      this._unbindKeys();
+      sim.setGravity(0, 1);
+      sim.usingSensor = false;
+    }
+  };
+
   MarblesTiltElement.prototype._bindMotion = function (sim) {
+    if (this._onMotion) { return; }
     var self = this;
-    var SENSOR_WAIT = 1400;
-    // Once DeviceMotion has delivered a real sample, ignore orientation —
-    // the two APIs were fighting and orientation was winning with a bad frame.
     var motionLive = false;
 
     function applyMotion(e) {
-      if (self._cowDragging || self._cowTouched) { return; }
+      if (!isImmersive(self) || self._manual) { return; }
       var ag = e.accelerationIncludingGravity;
       if (!ag || (ag.x == null && ag.y == null)) { return; }
       var ax = ag.x || 0, ay = ag.y || 0, az = ag.z || 0;
       if (Math.sqrt(ax * ax + ay * ay + az * az) < 2) { return; }
-      var g = gravityFromAcceleration(ax, ay, layoutAngle());
+      var g = gravityFromAcceleration(ax, ay, self._invert);
+      // If portrait layout keeps reporting "up" for a beat, flip polarity once.
+      if (self.offsetHeight >= self.offsetWidth && g.y < -0.55 &&
+          Math.abs(g.y) > Math.abs(g.x)) {
+        self._upFrames += 1;
+        if (self._upFrames > 18) {
+          self._invert = !self._invert;
+          self._upFrames = 0;
+          g = gravityFromAcceleration(ax, ay, self._invert);
+        }
+      } else {
+        self._upFrames = 0;
+      }
       sim.setGravity(g.x, g.y);
       sim.usingSensor = true;
       motionLive = true;
       self._hidePrompt();
-      self._hideCow();
     }
 
     function applyOrientation(e) {
-      if (motionLive || self._cowDragging || self._cowTouched) { return; }
+      if (motionLive || !isImmersive(self) || self._manual) { return; }
       if (e.beta == null && e.gamma == null) { return; }
-      var g = gravityFromOrientation(e.beta, e.gamma, layoutAngle());
+      var g = gravityFromOrientation(e.beta, e.gamma, self._invert);
       sim.setGravity(g.x, g.y);
       sim.usingSensor = true;
       self._hidePrompt();
-      self._hideCow();
     }
 
     this._onMotion = applyMotion;
     this._onOrientation = applyOrientation;
+    this._motionLive = function () { return motionLive; };
     window.addEventListener('devicemotion', applyMotion);
     window.addEventListener('deviceorientation', applyOrientation);
-
     this._offerMotionPermission(sim);
-    this._sensorTimer = setTimeout(function () {
-      if (!sim.usingSensor) { self._showCow(sim); }
-    }, SENSOR_WAIT);
   };
 
-  /**
-   * Bungee cow as a drag-tilt joystick when the device has no accelerometer
-   * (desktop), or motion never arrives. Drag her around the screen — gravity
-   * points from the centre toward the cow.
-   */
+  MarblesTiltElement.prototype._unbindMotion = function () {
+    if (this._onMotion) {
+      window.removeEventListener('devicemotion', this._onMotion);
+      this._onMotion = null;
+    }
+    if (this._onOrientation) {
+      window.removeEventListener('deviceorientation', this._onOrientation);
+      this._onOrientation = null;
+    }
+    this._hidePrompt();
+  };
+
   MarblesTiltElement.prototype._cowSrc = function () {
     var art = this.getAttribute('art') || '';
     var raw = this.getAttribute('cow') ||
@@ -424,64 +421,136 @@
     return window.AfterDark && AfterDark.bust ? AfterDark.bust(raw) : raw;
   };
 
+  MarblesTiltElement.prototype._anchor = function () {
+    var r = this.getBoundingClientRect();
+    return { x: r.width - 18, y: r.height - 18 };
+  };
+
+  MarblesTiltElement.prototype._placeCowRest = function () {
+    if (!this._cow) { return; }
+    var a = this._anchor();
+    // Rest a short rope-length up-left of the peg.
+    var x = a.x - ROPE_LEN * 0.55;
+    var y = a.y - ROPE_LEN * 0.55;
+    this._cow.style.left = x + 'px';
+    this._cow.style.top = y + 'px';
+    this._cowX = x;
+    this._cowY = y;
+    this._drawRope();
+  };
+
+  MarblesTiltElement.prototype._gravityFromCow = function (sim) {
+    var a = this._anchor();
+    var x = this._cowX, y = this._cowY;
+    // Peg is down-right; pulling the cow away from the peg tilts that way.
+    var gx = (x - a.x) / ROPE_LEN;
+    var gy = (y - a.y) / ROPE_LEN;
+    // Rest pose is up-left of the peg → default pull toward bottom-right-ish;
+    // bias so "hanging at rest" still reads as mostly screen-down.
+    gy += 0.85;
+    if (Math.hypot(gx, gy) < 0.12) { gx = 0; gy = 0.35; }
+    sim.setGravity(gx, gy);
+  };
+
+  MarblesTiltElement.prototype._drawRope = function () {
+    if (!this._rope || !this._cow) { return; }
+    var a = this._anchor();
+    var x1 = a.x, y1 = a.y;
+    var x2 = this._cowX, y2 = this._cowY;
+    var dx = x2 - x1, dy = y2 - y1;
+    var len = Math.hypot(dx, dy) || 1;
+    var ang = Math.atan2(dy, dx) * 180 / Math.PI;
+    this._rope.style.width = len + 'px';
+    this._rope.style.left = x1 + 'px';
+    this._rope.style.top = y1 + 'px';
+    this._rope.style.transform = 'rotate(' + ang + 'deg)';
+  };
+
   MarblesTiltElement.prototype._showCow = function (sim) {
     if (this._cow) { return; }
     var self = this;
+
+    var peg = document.createElement('div');
+    peg.setAttribute('aria-hidden', 'true');
+    peg.style.cssText =
+      'position:absolute;right:10px;bottom:10px;width:10px;height:10px;' +
+      'border-radius:50%;background:#c4a574;border:2px solid #6a4a2a;z-index:3;' +
+      'box-shadow:0 1px 0 #0008';
+    this.appendChild(peg);
+    this._peg = peg;
+
+    var rope = document.createElement('div');
+    rope.setAttribute('aria-hidden', 'true');
+    rope.style.cssText =
+      'position:absolute;left:0;top:0;height:2px;width:40px;' +
+      'background:#b08968;transform-origin:0 50%;z-index:2;pointer-events:none;' +
+      'box-shadow:0 1px 0 #0006';
+    this.appendChild(rope);
+    this._rope = rope;
+
     var cow = document.createElement('img');
     cow.src = this._cowSrc();
-    cow.alt = 'Drag the cow to tilt';
-    cow.title = 'Drag the cow to tilt gravity';
+    cow.alt = 'Tilt cow — drag or use arrow keys';
+    cow.title = 'Drag the cow (or use arrow keys) to tilt';
     cow.draggable = false;
     cow.setAttribute('role', 'slider');
-    cow.setAttribute('aria-label', 'Tilt control — drag the cow');
+    cow.setAttribute('aria-label', 'Tilt control — drag the cow or press arrow keys');
     cow.style.cssText =
-      'position:absolute;width:42px;height:auto;image-rendering:pixelated;' +
-      'left:50%;top:72%;transform:translate(-50%,-50%);z-index:3;' +
+      'position:absolute;width:36px;height:auto;image-rendering:pixelated;' +
+      'transform:translate(-50%,-50%);z-index:4;' +
       'cursor:grab;touch-action:none;user-select:none;-webkit-user-drag:none;' +
       'filter:drop-shadow(0 2px 0 #0008)';
     this.appendChild(cow);
     this._cow = cow;
-    this._cowTouched = false;
 
     var hint = document.createElement('div');
-    hint.textContent = 'Drag the cow to tilt';
+    hint.textContent = 'Drag cow · arrows tilt';
     hint.style.cssText =
-      'position:absolute;left:50%;bottom:4%;transform:translateX(-50%);' +
-      'z-index:2;color:#e8e0c8;font:600 12px/1.2 ui-sans-serif,system-ui,sans-serif;' +
-      'text-shadow:0 1px 0 #000;pointer-events:none;white-space:nowrap';
+      'position:absolute;right:8px;bottom:52px;z-index:2;color:#e8e0c8;' +
+      'font:600 11px/1.2 ui-sans-serif,system-ui,sans-serif;' +
+      'text-shadow:0 1px 0 #000;pointer-events:none;text-align:right;' +
+      'opacity:0.9';
     this.appendChild(hint);
     this._cowHint = hint;
 
-    function setFromPointer(clientX, clientY) {
-      var r = self.getBoundingClientRect();
-      if (!r.width || !r.height) { return; }
-      var px = clientX - r.left;
-      var py = clientY - r.top;
+    function setCow(px, py, fromUser) {
+      var a = self._anchor();
+      var dx = px - a.x, dy = py - a.y;
+      var d = Math.hypot(dx, dy);
+      if (d > ROPE_LEN && d > 0) {
+        dx = dx / d * ROPE_LEN;
+        dy = dy / d * ROPE_LEN;
+        px = a.x + dx;
+        py = a.y + dy;
+      }
+      self._cowX = px;
+      self._cowY = py;
       cow.style.left = px + 'px';
       cow.style.top = py + 'px';
-      cow.style.transform = 'translate(-50%,-50%)';
-      // Vector from centre → cow = gravity (screen y grows downward).
-      var gx = (px / r.width - 0.5) * 2;
-      var gy = (py / r.height - 0.5) * 2;
-      // Keep a little pull even near the centre so marbles do not float.
-      if (Math.hypot(gx, gy) < 0.12) { gx = 0; gy = 0.35; }
-      sim.setGravity(gx, gy);
+      self._drawRope();
+      if (fromUser) {
+        self._manual = true;
+        self._gravityFromCow(sim);
+        hint.style.opacity = '0.35';
+      }
     }
 
     function onDown(e) {
       e.preventDefault();
+      e.stopPropagation();
       cow.style.cursor = 'grabbing';
       self._cowDragging = true;
-      self._cowTouched = true;
-      hint.style.opacity = '0';
+      self.focus();
       var pt = e.touches ? e.touches[0] : e;
-      setFromPointer(pt.clientX, pt.clientY);
+      var r = self.getBoundingClientRect();
+      setCow(pt.clientX - r.left, pt.clientY - r.top, true);
     }
     function onMove(e) {
       if (!self._cowDragging) { return; }
       e.preventDefault();
       var pt = e.touches ? e.touches[0] : e;
-      setFromPointer(pt.clientX, pt.clientY);
+      var r = self.getBoundingClientRect();
+      setCow(pt.clientX - r.left, pt.clientY - r.top, true);
     }
     function onUp() {
       self._cowDragging = false;
@@ -494,17 +563,14 @@
     window.addEventListener('pointercancel', onUp);
     this._cowOnMove = onMove;
     this._cowOnUp = onUp;
+    this._setCow = setCow;
 
-    // Park her a little below centre so default gravity is "down".
-    var r = this.getBoundingClientRect();
-    if (r.width) {
-      setFromPointer(r.left + r.width * 0.5, r.top + r.height * 0.72);
-    }
+    this._placeCowRest();
+    this._gravityFromCow(sim);
   };
 
   MarblesTiltElement.prototype._hideCow = function () {
     if (this._cowDragging) { return; }
-    this._cowTouched = false;
     if (this._cowOnMove) {
       window.removeEventListener('pointermove', this._cowOnMove);
       this._cowOnMove = null;
@@ -514,14 +580,51 @@
       window.removeEventListener('pointercancel', this._cowOnUp);
       this._cowOnUp = null;
     }
-    if (this._cow && this._cow.parentNode) {
-      this._cow.parentNode.removeChild(this._cow);
+    ['_cow', '_rope', '_peg', '_cowHint'].forEach(function (k) {
+      var n = this[k];
+      if (n && n.parentNode) { n.parentNode.removeChild(n); }
+      this[k] = null;
+    }, this);
+    this._setCow = null;
+  };
+
+  MarblesTiltElement.prototype._bindKeys = function (sim) {
+    if (this._onKey) { return; }
+    var self = this;
+    function onKey(e) {
+      if (!isImmersive(self)) { return; }
+      var k = e.key;
+      if (k !== 'ArrowUp' && k !== 'ArrowDown' && k !== 'ArrowLeft' &&
+          k !== 'ArrowRight') { return; }
+      e.preventDefault();
+      self._manual = true;
+      var gx = sim.gx, gy = sim.gy;
+      if (k === 'ArrowLeft') { gx -= KEY_STEP; }
+      if (k === 'ArrowRight') { gx += KEY_STEP; }
+      if (k === 'ArrowUp') { gy -= KEY_STEP; }
+      if (k === 'ArrowDown') { gy += KEY_STEP; }
+      sim.setGravity(gx, gy);
+      // Move the cow on its rope to match, so the control stays honest.
+      if (self._setCow) {
+        var a = self._anchor();
+        var tx = a.x + clamp(sim.gx, -1, 1) * ROPE_LEN;
+        var ty = a.y + clamp(sim.gy - 0.85, -1, 1) * ROPE_LEN;
+        self._setCow(tx, ty, false);
+        self._cowX = parseFloat(self._cow.style.left);
+        self._cowY = parseFloat(self._cow.style.top);
+        self._drawRope();
+      }
+      if (self._cowHint) { self._cowHint.style.opacity = '0.35'; }
     }
-    this._cow = null;
-    if (this._cowHint && this._cowHint.parentNode) {
-      this._cowHint.parentNode.removeChild(this._cowHint);
+    this._onKey = onKey;
+    window.addEventListener('keydown', onKey);
+  };
+
+  MarblesTiltElement.prototype._unbindKeys = function () {
+    if (this._onKey) {
+      window.removeEventListener('keydown', this._onKey);
+      this._onKey = null;
     }
-    this._cowHint = null;
   };
 
   MarblesTiltElement.prototype._offerMotionPermission = function (sim) {
@@ -530,9 +633,8 @@
       typeof DeviceOrientationEvent.requestPermission === 'function';
     var needsMotion = typeof DeviceMotionEvent !== 'undefined' &&
       typeof DeviceMotionEvent.requestPermission === 'function';
-
-    // Android Chrome does not need a gesture; only iOS does.
     if (!needsOrient && !needsMotion) { return; }
+    if (this._prompt) { return; }
 
     var prompt = document.createElement('button');
     prompt.type = 'button';
@@ -540,7 +642,7 @@
     prompt.setAttribute('aria-label', 'Enable accelerometer so marbles follow gravity');
     prompt.style.cssText =
       'position:absolute;left:50%;bottom:12%;transform:translateX(-50%);' +
-      'z-index:2;padding:0.7em 1.2em;font:600 14px/1.2 ui-sans-serif,system-ui,sans-serif;' +
+      'z-index:5;padding:0.7em 1.2em;font:600 14px/1.2 ui-sans-serif,system-ui,sans-serif;' +
       'color:#111;background:#e8e0c8;border:0;border-radius:4px;cursor:pointer;' +
       'box-shadow:0 2px 0 #0006';
     this.appendChild(prompt);
@@ -548,23 +650,16 @@
 
     prompt.addEventListener('click', function () {
       var tasks = [];
-      if (needsMotion) {
-        tasks.push(DeviceMotionEvent.requestPermission());
-      }
-      if (needsOrient) {
-        tasks.push(DeviceOrientationEvent.requestPermission());
-      }
+      if (needsMotion) { tasks.push(DeviceMotionEvent.requestPermission()); }
+      if (needsOrient) { tasks.push(DeviceOrientationEvent.requestPermission()); }
       Promise.all(tasks).then(function (states) {
-        var ok = states.some(function (s) { return s === 'granted'; });
-        if (ok) {
+        if (states.some(function (s) { return s === 'granted'; })) {
           self._hidePrompt();
         } else {
           prompt.textContent = 'Motion permission denied';
-          self._showCow(sim);
         }
       }).catch(function () {
         prompt.textContent = 'Motion unavailable';
-        self._showCow(sim);
       });
     });
   };
@@ -577,18 +672,8 @@
   };
 
   MarblesTiltElement.prototype.disconnectedCallback = function () {
-    if (this._sensorTimer) {
-      clearTimeout(this._sensorTimer);
-      this._sensorTimer = 0;
-    }
-    if (this._onMotion) {
-      window.removeEventListener('devicemotion', this._onMotion);
-      this._onMotion = null;
-    }
-    if (this._onOrientation) {
-      window.removeEventListener('deviceorientation', this._onOrientation);
-      this._onOrientation = null;
-    }
+    this._unbindMotion();
+    this._unbindKeys();
     this._hideCow();
     this._hidePrompt();
     if (this._screen) { this._screen.stop(); this._screen = null; }
@@ -598,15 +683,12 @@
   window.AfterDarkMarblesTilt = MarblesTilt;
   window.AfterDarkMarblesTilt.gravityFromAcceleration = gravityFromAcceleration;
   window.AfterDarkMarblesTilt.gravityFromOrientation = gravityFromOrientation;
-  window.AfterDarkMarblesTilt.layoutAngle = layoutAngle;
+  window.AfterDarkMarblesTilt.isImmersive = isImmersive;
 
   (function selftest() {
-    // Android upright: ag ≈ (0, +9.8, 0) → screen down.
-    var upright = gravityFromAcceleration(0, 9.8, 0);
+    var upright = gravityFromAcceleration(0, 9.8, false);
     console.assert(Math.abs(upright.x) < 0.05 && upright.y > 0.95, 'android upright');
-    var inverted = gravityFromAcceleration(0, -9.8, 0);
-    console.assert(inverted.y < -0.95, 'android upside-down → −y');
-    var tipRight = gravityFromAcceleration(-9.8, 0, 0);
-    console.assert(tipRight.x > 0.95, 'android tip-right → +x');
+    var flipped = gravityFromAcceleration(0, 9.8, true);
+    console.assert(flipped.y < -0.95, 'invert flips upright');
   }());
 }());
