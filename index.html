@@ -373,7 +373,8 @@
       <div class="preview">
         <div class="monitor">
           <div class="glass">
-            <iframe id="screen" title="Screen saver preview" scrolling="no"></iframe>
+            <iframe id="screen" title="Screen saver preview" scrolling="no"
+                    allow="accelerometer; gyroscope"></iframe>
             <div class="off" id="off">Pick a screen saver from the list.</div>
           </div>
         </div>
@@ -447,6 +448,8 @@
         js: 'toasters', el: 'after-dark-toasters', attrs: 'art="all/art/toast3" objects="air wing"' },
       { name: 'Marbles',         file: 'all/marbles.html',         kind: 'ripped', tag: 'MARBLES2.AD 1992',
         js: 'marbles', el: 'after-dark-marbles', attrs: 'art="all/art/marbles2" pins="many" pin-size="medium" speed="medium"' },
+      { name: 'Marbles (Tilt)',  file: 'all/marbles-tilt.html',    kind: 'ripped', tag: 'MARBLES2 + accel',
+        js: 'marbles-tilt', el: 'after-dark-marbles-tilt', attrs: 'art="all/art/marbles2" pins="many" pin-size="medium" speed="medium"' },
       { name: 'Aquatic Realm',   file: 'all/aqua.html',            kind: 'ripped', tag: 'Aqua.ad',
         js: 'aqua', el: 'after-dark-aqua', attrs: 'art="all/art/aqua" creatures="14" seaweed="6"' },
       { name: 'Flocks',          file: 'all/flocks.html',          kind: 'ripped', tag: 'FLOCKS.AD 1992',
@@ -494,6 +497,11 @@
         { name: 'objects', label: 'Objects', values: ['air wing', 'squadron', 'swarm'] }
       ],
       marbles: [
+        { name: 'pins', label: 'Pins', values: ['many', 'none', 'few', 'lots'] },
+        { name: 'pin-size', label: 'Pin Size', values: ['medium', 'x-small', 'big'] },
+        { name: 'speed', label: 'Speed', values: ['medium', 'slow', 'fast'] }
+      ],
+      'marbles-tilt': [
         { name: 'pins', label: 'Pins', values: ['many', 'none', 'few', 'lots'] },
         { name: 'pin-size', label: 'Pin Size', values: ['medium', 'x-small', 'big'] },
         { name: 'speed', label: 'Speed', values: ['medium', 'slow', 'fast'] }
@@ -714,6 +722,9 @@
       frame.src = urlFor(current);
       frame.title = current.name + ' screen saver';
       frame.setAttribute('scrolling', 'no');
+      if (current.js === 'marbles-tilt') {
+        frame.setAttribute('allow', 'accelerometer; gyroscope');
+      }
       box.appendChild(frame);
       box.appendChild(el('div', 'catch'));
       box.appendChild(el('div', 'hint', 'Click anywhere, or press a key, to stop'));
@@ -750,10 +761,14 @@
     }
 
     function snippets(s) {
+      var iframeAllow = s.js === 'marbles-tilt'
+        ? '\n        allow="accelerometer; gyroscope"'
+        : '';
       var out = [{
         cap: 'Anywhere, in an iframe',
         code: '<iframe src="' + absolute(urlFor(s)) + '"\n' +
-              '        width="640" height="480" scrolling="no" style="border:0"\n' +
+              '        width="640" height="480" scrolling="no" style="border:0"' +
+              iframeAllow + '\n' +
               '        title="' + s.name + ' screen saver"></iframe>',
         note: 'Works from any site. Nothing to install.'
       }];

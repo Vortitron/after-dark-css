@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Marbles (Tilt) | After Dark in the Browser</title>
+  <meta name="description" content="After Dark's Marbles screensaver with accelerometer gravity: marbles fall toward true down when you tilt the phone, and the pile sloshes.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="shortcut icon" href="../img/favicon.png" />
+  <link rel="stylesheet" href="base.css" />
+  <style>
+    html, body { height: 100%; }
+    body { background: #000; margin: 0; overflow: hidden; touch-action: none; }
+
+    after-dark-marbles-tilt {
+      position: absolute;
+      inset: 0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="visuallyhidden">Marbles Screensaver with tilt - After Dark in the Browser</h1>
+
+  <!-- Same control-panel settings as the 1992 original, plus device gravity. -->
+  <after-dark-marbles-tilt art="art/marbles2" pins="many" pin-size="medium" speed="medium"></after-dark-marbles-tilt>
+
+  <script src="ad.js"></script>
+  <script src="modules/marbles-tilt.js"></script>
+</body>
+</html>

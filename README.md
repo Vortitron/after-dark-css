@@ -48,6 +48,9 @@ Two modules called Marbles turn up, and they are different screensavers. The
 one people remember — small marbles dropping through a field of pins and
 stacking at the bottom — is `MARBLES2.AD` from 1992. After Dark 4.0 shipped a
 new `MARBLES.AD` that just drifts big rendered marbles around. Both are here.
+There is also a tilt variant of the 1992 one (`marbles-tilt.html`) that uses
+the device accelerometer so marbles fall toward true down when you rotate the
+phone and the pile sloshes instead of snapping onto a lattice.
 
 The CSS screensavers are self-contained pages and open straight from disk. The decoded ones fetch their artwork, so they need serving over HTTP — `python3 -m http.server` from the repo root is enough.
 
@@ -77,6 +80,7 @@ The decoded ones are also custom elements, so if you are hosting the files yours
 | --- | --- | --- |
 | `<after-dark-toasters>` | `modules/toasters.js` | `objects` = squadron / air wing / swarm |
 | `<after-dark-marbles>` | `modules/marbles.js` | `pins` = none / few / many / lots, `pin-size` = x-small / medium / big, `speed` = slow / medium / fast |
+| `<after-dark-marbles-tilt>` | `modules/marbles-tilt.js` | same options as marbles; gravity follows DeviceOrientation (tap to enable on iOS). Embed with `allow="accelerometer; gyroscope"` on the iframe |
 | `<after-dark-flocks>` | `modules/flocks.js` | `kind` = birds / polliwogs / gnats / paparazzi / atoms / copters / dots, `size` = small / medium / large |
 | `<after-dark-aqua>` | `modules/aqua.js` | `creatures` and `seaweed` are counts, `sea-floor` is a flag |
 | `<after-dark-marbles-40>` | `modules/marbles-40.js` | `count` = a few / a pouch full / a jar full / a box full, `pattern` |
