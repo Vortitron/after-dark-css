@@ -6,7 +6,7 @@
   <title>After Dark in the Browser</title>
   <meta name="description" content="After Dark screensavers running in the browser — the CSS recreations, plus new ones built from artwork decoded straight out of the original Windows modules.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="img/favicon.png?v=fa6739b-260806154512" />
+  <link rel="shortcut icon" href="img/favicon.png?v=8363f11-260807091201" />
   <style>
     /* ------------------------------------------------------------------
        Windows 95 Display Properties, which is where After Dark 4.0 for
@@ -232,11 +232,14 @@
        imitating did. */
     .saver { position: fixed; inset: 0; z-index: 100; background: #000; cursor: none; }
     .saver iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-    /* A sheet over the iframe, because a click inside one never reaches us. */
+    /* A sheet over the iframe, because a click inside one never reaches us.
+       The savers you can play with go without it and say when they are done. */
     .saver .catch { position: absolute; inset: 0; }
+    .saver.live { cursor: auto; }
     .saver .hint {
       position: absolute; left: 0; right: 0; bottom: 9%;
       text-align: center;
+      pointer-events: none;
       color: #fff;
       text-shadow: 1px 1px 0 #000;
       animation: dim 3.5s ease-in forwards;
@@ -354,7 +357,7 @@
 
   <div class="window">
     <div class="titlebar">
-      <img src="img/after-dark-icon.png?v=fa6739b-260806154512" alt="" width="16" height="16">
+      <img src="img/after-dark-icon.png?v=8363f11-260807091201" alt="" width="16" height="16">
       <span class="grow">Display Properties</span>
       <span class="btn out" aria-hidden="true">_</span>
       <span class="btn out" aria-hidden="true">&#9633;</span>
@@ -434,7 +437,7 @@
 
   <div class="taskbar">
     <a class="start" href="https://github.com/Vortitron/after-dark-css">
-      <img src="img/favicon.png?v=fa6739b-260806154512" alt="" width="14" height="14"> Source
+      <img src="img/favicon.png?v=8363f11-260807091201" alt="" width="14" height="14"> Source
     </a>
     <span>After Dark &copy; 1989&ndash;1998 Berkeley Systems</span>
     <span class="tray" id="build" title="Build stamp — bumps when GitHub Pages is updated">…</span>
@@ -442,7 +445,7 @@
   </div>
 
   <!-- ad-build -->
-  <script>window.AFTER_DARK_BUILD = {"rev": "fa6739b", "time": "2026-08-06T15:45:12Z", "label": "06 Aug 15:45 UTC", "v": "fa6739b-260806154512"};</script>
+  <script>window.AFTER_DARK_BUILD = {"rev": "8363f11", "time": "2026-08-07T09:12:01Z", "label": "07 Aug 09:12 UTC", "v": "8363f11-260807091201"};</script>
   <!-- /ad-build -->
 
   <script>
@@ -694,6 +697,7 @@
        click or key puts it away again. */
 
     var saver = null;
+    var saverIsInteractive = false;
 
     /* Safari still wants the prefix. */
     function fullscreenElement() {
@@ -705,13 +709,38 @@
       document[how]('webkitfullscreenchange', onFullscreenChange);
     }
 
+    /* A saver you can play with keeps the pointer and the keys for itself, so
+       the sheet that normally catches them is left off and it says when it is
+       done. Only the tilt one is like that so far. */
+    function isInteractive(s) {
+      return Boolean(s) && s.js === 'marbles-tilt';
+    }
+
+    /* The arrows belong to whatever is in the frame; every other key still
+       puts the saver away, the way the original did. */
+    function onSaverKey(e) {
+      if (saverIsInteractive && (e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
+          e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+        return;
+      }
+      stopSaver();
+    }
+
+    /* Only the frame we started gets to say when it is done. */
+    function onSaverMessage(e) {
+      if (!saver || e.data !== 'after-dark:stop') { return; }
+      if (e.source && e.source !== saver.firstChild.contentWindow) { return; }
+      stopSaver();
+    }
+
     function stopSaver() {
       if (!saver) { return; }
       var box = saver;
       saver = null;
       box.removeEventListener('mousedown', stopSaver);
       box.removeEventListener('touchstart', stopSaver);
-      document.removeEventListener('keydown', stopSaver);
+      document.removeEventListener('keydown', onSaverKey);
+      window.removeEventListener('message', onSaverMessage);
       fullscreenEvents(false);
       if (fullscreenElement()) {
         var exit = document.exitFullscreen || document.webkitExitFullscreen;
@@ -728,7 +757,8 @@
 
     function startSaver() {
       if (!current || saver) { return; }
-      var box = el('div', 'saver');
+      saverIsInteractive = isInteractive(current);
+      var box = el('div', 'saver' + (saverIsInteractive ? ' live' : ''));
       var frame = document.createElement('iframe');
       frame.src = urlFor(current);
       frame.title = current.name + ' screen saver';
@@ -737,15 +767,24 @@
         frame.setAttribute('allow', 'accelerometer; gyroscope');
       }
       box.appendChild(frame);
-      box.appendChild(el('div', 'catch'));
-      box.appendChild(el('div', 'hint', 'Click anywhere, or press a key, to stop'));
+      if (!saverIsInteractive) { box.appendChild(el('div', 'catch')); }
+      box.appendChild(el('div', 'hint', saverIsInteractive
+        ? 'Drag the cow, or tilt with the arrow keys — any other key stops'
+        : 'Click anywhere, or press a key, to stop'));
       document.body.appendChild(box);
       saver = box;
 
-      box.addEventListener('mousedown', stopSaver);
-      box.addEventListener('touchstart', stopSaver);
-      document.addEventListener('keydown', stopSaver);
+      if (!saverIsInteractive) {
+        box.addEventListener('mousedown', stopSaver);
+        box.addEventListener('touchstart', stopSaver);
+      }
+      document.addEventListener('keydown', onSaverKey);
+      window.addEventListener('message', onSaverMessage);
       fullscreenEvents(true);
+      /* Hand the keys to the frame, so the arrows reach the cow. */
+      if (saverIsInteractive) {
+        frame.addEventListener('load', function () { frame.focus(); });
+      }
       /* If the browser says no — iOS does — the overlay still covers the
          window, which is close enough. */
       var go = box.requestFullscreen || box.webkitRequestFullscreen;
