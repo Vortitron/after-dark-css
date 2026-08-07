@@ -14,10 +14,10 @@
  *
  * Unlike the 1992 original the pile does not snap onto a lattice, so it can be
  * poured about; it fills for a minute or two, and when there is no room left
- * the walls give way and the whole lot pours off the downhill edge rather than
- * the screen blinking clean. Turning the phone over turns the field with it -
- * same pins, same marbles, same places - since the screen has not changed, it
- * has only been rotated.
+ * the walls give way, the whole lot pours off the downhill edge, and then the
+ * pins go up as fireworks - rather than the screen blinking clean. Turning the
+ * phone over turns the field with it - same pins, same marbles, same places -
+ * since the screen has not changed, it has only been rotated.
  *
  *   <after-dark-marbles-tilt art="art/marbles2" pins="many"
  *     pin-size="medium" speed="medium"></after-dark-marbles-tilt>
@@ -43,6 +43,17 @@
   var DAMP = 0.9994;
   var PIN_HIT = 0.42;
   var SOLVER_PASSES = 3;               // a deep pile needs more than a couple
+
+  /* What keeps the bottom of a deep pile still. Below REST_SPEED a knock is
+     not a bounce, it is a stop; contacts grip instead of sliding; and a
+     fraction of overlap is left alone rather than being shoved at forever,
+     which is the shiver you see when a few hundred marbles are stacked up. */
+  var REST_SPEED = 26;                 // pixels a second
+  var REST_SLIDE = 0.55;               // grip between two marbles at rest
+  var REST_DAMP = 0.86;                // and how fast the last twitch dies
+  var SLOP = 0.4;                      // overlap not worth correcting, px
+  var STILL_SPEED = 14;                // got nowhere this frame, px a second
+  var SLEEP_DAMP = 0.5;                // so let its held-back speed go
   var G_EARTH = 9.80665;
 
   /* How full it gets before the floor drops out, as a share of the screen the
@@ -53,6 +64,18 @@
   var FILL_TIME = 100;                 // seconds to fill, whatever the screen
   var DRAIN_MAX = 9;                   // seconds before the last few are swept
   var DRAIN_SHAKE = 130;               // and how hard the stragglers are shaken
+
+  /* And then the pins go up. They light one after another, in a wave across
+     the screen, and what is left of them falls the way everything else does -
+     so the fireworks lean with the phone too. */
+  var SPARKS_PER_PIN = 13;
+  var FUSE_SPREAD = 1.1;               // seconds for the wave to cross
+  var SPARK_LIFE = 0.8, SPARK_LIFE_2 = 1.8;
+  var SPARK_SPEED = 70, SPARK_SPEED_2 = 290;
+  var SPARK_DRAG = 0.985;
+  var SPARK_WEIGHT = 0.35;             // sparks fall lighter than marbles
+  var BURST_COLOURS = ['#fff6c8', '#ffd23f', '#ff8c2b', '#ff4e3a',
+                       '#8ad4ff', '#b78aff', '#7dff9b'];
 
   var ROPE_LEN = 78;                   // how far the cow hangs below her peg
   var PEG_Y = 18;                      // and how far the peg is from the top
@@ -67,6 +90,12 @@
 
   function rand(a, b) { return a + Math.random() * (b - a); }
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+  /** What comes back off a wall from an approach speed of `into`. */
+  function bounceOff(into) {
+    if (into <= 0) { return 0; }
+    return into > REST_SPEED ? into * WALL_BOUNCE : 0;
+  }
 
   /**
    * True when this saver has the run of the display rather than sitting in
@@ -189,6 +218,9 @@
     this.spawn = 0;
     this.usingSensor = false;
     this.draining = 0;
+    this.blowing = false;
+    this.bursting = 0;
+    this.sparks = [];
   }
 
   MarblesTilt.prototype.setPinSize = function (name) {
@@ -257,9 +289,12 @@
 
   MarblesTilt.prototype.reset = function (w, h) {
     this.marbles = [];
+    this.sparks = [];
     this.scatter(w, h);
     this.spawn = 0;
     this.draining = 0;
+    this.blowing = false;
+    this.bursting = 0;
   };
 
   /** How many marbles this screen holds before the floor drops out. */
@@ -278,7 +313,7 @@
    */
   MarblesTilt.prototype.turn = function (q, w, h, nw, nh) {
     q = ((Math.round(q) % 4) + 4) % 4;
-    var all = this.pins.concat(this.marbles);
+    var all = this.pins.concat(this.marbles, this.sparks);
     var i, k, p, x, vx;
     for (k = 0; k < q; k += 1) {
       for (i = 0; i < all.length; i += 1) {
@@ -399,11 +434,19 @@
             m.x = p.x + nx * hit;
             m.y = p.y + ny * hit;
             var into = m.vx * nx + m.vy * ny;
-            if (into < 0) {
+            if (into < -REST_SPEED) {
+              // A real knock: bounce, with a nudge sideways so a marble that
+              // lands dead on a pin's head picks a side to fall off.
               m.vx = (m.vx - 2 * into * nx) * BOUNCE + rand(-10, 10);
               m.vy = (m.vy - 2 * into * ny) * BOUNCE;
+              if (m.sensitive) { m.oh = OH; }
+            } else if (into < 0) {
+              // Only leaning on it. Take out the lean and leave the rest: a
+              // marble resting on a pin used to be kicked every single frame,
+              // which is most of the fidgeting at the bottom of a full screen.
+              m.vx -= into * nx;
+              m.vy -= into * ny;
             }
-            if (m.sensitive) { m.oh = OH; }
           }
         }
       }
@@ -427,6 +470,8 @@
 
     if (this.draining > 0) {
       this.drain(dt, w, h);
+    } else if (this.blowing) {
+      this.burst(dt, w, h);
     } else {
       var full = this.cap(w, h);
       this.spawn -= dt;
@@ -447,6 +492,8 @@
 
     for (i = 0; i < this.marbles.length; i += 1) {
       m = this.marbles[i];
+      m.sx = m.x;                      // where it was, to see if it got anywhere
+      m.sy = m.y;
       m.vx += ax * dt;
       m.vy += ay * dt;
       m.vx *= DAMP;
@@ -462,39 +509,54 @@
           m.vx += rand(-DRAIN_SHAKE, DRAIN_SHAKE) * dt;
           m.vy += rand(-DRAIN_SHAKE, DRAIN_SHAKE) * dt;
         }
-      } else if (m.x < m.r) {
-        m.x = m.r;
-        m.vx = Math.abs(m.vx) * WALL_BOUNCE;
-        m.vy *= WALL_SLIDE;
-      } else if (m.x > w - m.r) {
-        m.x = w - m.r;
-        m.vx = -Math.abs(m.vx) * WALL_BOUNCE;
-        m.vy *= WALL_SLIDE;
-      }
-      if (!open) {
+      } else {
+        // A marble on the floor of a full screen is not bouncing, it is being
+        // leant on. Under REST_SPEED the wall takes all of it.
+        if (m.x < m.r) {
+          m.x = m.r;
+          m.vx = bounceOff(-m.vx);
+          m.vy *= WALL_SLIDE;
+        } else if (m.x > w - m.r) {
+          m.x = w - m.r;
+          m.vx = -bounceOff(m.vx);
+          m.vy *= WALL_SLIDE;
+        }
         if (m.y < m.r) {
           m.y = m.r;
-          m.vy = Math.abs(m.vy) * WALL_BOUNCE;
+          m.vy = bounceOff(-m.vy);
           m.vx *= WALL_SLIDE;
         } else if (m.y > h - m.r) {
           m.y = h - m.r;
-          m.vy = -Math.abs(m.vy) * WALL_BOUNCE;
+          m.vy = -bounceOff(m.vy);
           m.vx *= WALL_SLIDE;
+        }
+        if (Math.abs(m.vx) + Math.abs(m.vy) < REST_SPEED) {
+          m.vx *= REST_DAMP;
+          m.vy *= REST_DAMP;
         }
       }
 
       this.hitPins(m);
     }
 
-    for (var pass = 0; pass < SOLVER_PASSES; pass += 1) {
-      this.solve(w, h);
-    }
+    this.solve(w, h);
 
     // Solver soft-pushes can sneak past the floor - clamp hard so a tilt does
     // not leak marbles off the edge of the visible canvas.
     if (!open) {
+      var still = STILL_SPEED * dt;
       for (i = 0; i < this.marbles.length; i += 1) {
-        this.clampMarble(this.marbles[i], w, h);
+        m = this.marbles[i];
+        this.clampMarble(m, w, h);
+        // Buried marbles keep being given speed by gravity and keep having it
+        // taken away by whatever they are resting on. Left alone they strain
+        // against each other for ever; if a marble got nowhere this frame, let
+        // it give up. Anything that does move keeps every bit of its speed, so
+        // a tilt still sends the whole pile sliding.
+        if (Math.abs(m.x - m.sx) < still && Math.abs(m.y - m.sy) < still) {
+          m.vx *= SLEEP_DAMP;
+          m.vy *= SLEEP_DAMP;
+        }
       }
     }
   };
@@ -511,33 +573,39 @@
     var cols = Math.max(1, Math.ceil(w / CELL));
     var rows = Math.max(1, Math.ceil(h / CELL));
     var cells = cols * rows;
-    var i, c;
+    var i, c, pass;
 
     if (!this._head || this._head.length < cells) { this._head = new Int32Array(cells); }
     if (!this._next || this._next.length < n) { this._next = new Int32Array(n * 2); }
     var head = this._head, next = this._next;
-    head.fill(-1, 0, cells);
 
-    for (i = 0; i < n; i += 1) {
-      c = clamp(Math.floor(list[i].y / CELL), 0, rows - 1) * cols +
-        clamp(Math.floor(list[i].x / CELL), 0, cols - 1);
-      next[i] = head[c];
-      head[c] = i;
-    }
+    /* The order marbles are worked in is the order they were spawned in, and
+       it is left that way on purpose: sorting them by depth each frame, so
+       that corrections travel up the stack, shuffles a settled pile about
+       more than it helps. */
+    for (pass = 0; pass < SOLVER_PASSES; pass += 1) {
+      head.fill(-1, 0, cells);
+      for (i = 0; i < n; i += 1) {
+        c = clamp(Math.floor(list[i].y / CELL), 0, rows - 1) * cols +
+          clamp(Math.floor(list[i].x / CELL), 0, cols - 1);
+        next[i] = head[c];
+        head[c] = i;
+      }
 
-    for (i = 0; i < n; i += 1) {
-      var m = list[i];
-      var cx = clamp(Math.floor(m.x / CELL), 0, cols - 1);
-      var cy = clamp(Math.floor(m.y / CELL), 0, rows - 1);
-      for (var gy = cy - 1; gy <= cy + 1; gy += 1) {
-        if (gy < 0 || gy >= rows) { continue; }
-        for (var gx = cx - 1; gx <= cx + 1; gx += 1) {
-          if (gx < 0 || gx >= cols) { continue; }
-          var j = head[gy * cols + gx];
-          while (j >= 0) {
-            // Each pair turns up in both marbles' neighbourhoods; take it once.
-            if (j > i) { this.resolve(m, list[j]); }
-            j = next[j];
+      for (i = 0; i < n; i += 1) {
+        var m = list[i];
+        var cx = clamp(Math.floor(m.x / CELL), 0, cols - 1);
+        var cy = clamp(Math.floor(m.y / CELL), 0, rows - 1);
+        for (var by = cy - 1; by <= cy + 1; by += 1) {
+          if (by < 0 || by >= rows) { continue; }
+          for (var bx = cx - 1; bx <= cx + 1; bx += 1) {
+            if (bx < 0 || bx >= cols) { continue; }
+            var j = head[by * cols + bx];
+            while (j >= 0) {
+              // Each pair turns up in both marbles' neighbourhoods; take it once.
+              if (j > i) { this.resolve(m, list[j]); }
+              j = next[j];
+            }
           }
         }
       }
@@ -548,8 +616,7 @@
    * The emptying. Gravity still applies and still follows the phone, so the
    * pile pours out of whichever edge you tilt towards; marbles that are well
    * clear of the screen are forgotten. When the last one has gone - or when
-   * DRAIN_MAX is up and something is still wedged - the pins are scattered
-   * afresh and it starts filling again.
+   * DRAIN_MAX is up and something is still wedged - the pins go up.
    */
   MarblesTilt.prototype.drain = function (dt, w, h) {
     this.draining -= dt;
@@ -562,7 +629,90 @@
       }
     }
     this.marbles = kept;
-    if (!kept.length || this.draining <= 0) { this.reset(w, h); }
+    if (!kept.length || this.draining <= 0) { this.blowUp(w, h); }
+  };
+
+  /** Lay a fuse to every pin, running out from somewhere on the screen. */
+  MarblesTilt.prototype.blowUp = function (w, h) {
+    var ox = rand(0, w), oy = rand(0, h);
+    var span = Math.hypot(w, h) || 1;
+    for (var i = 0; i < this.pins.length; i += 1) {
+      var p = this.pins[i];
+      p.fuse = (Math.hypot(p.x - ox, p.y - oy) / span) * FUSE_SPREAD + rand(0, 0.2);
+    }
+    this.marbles = [];
+    this.sparks = [];
+    this.draining = 0;
+    this.bursting = 0;
+    this.blowing = true;
+    this._burstPins = this.pins.length;
+  };
+
+  /**
+   * One pin, gone in a shower of its own colour. A screen set to Lots of pins
+   * would otherwise put up a wall of sparks, so a crowded field gets a smaller
+   * shower each and a sparse one gets a better show: about the same finale
+   * either way.
+   */
+  MarblesTilt.prototype.pop = function (p, pins) {
+    var colour = BURST_COLOURS[Math.floor(rand(0, BURST_COLOURS.length))];
+    var many = Math.round(clamp(SPARKS_PER_PIN * 70 / (pins || 1), 6, 20));
+    many += Math.floor(rand(0, 4));
+    for (var i = 0; i < many; i += 1) {
+      var a = rand(0, Math.PI * 2);
+      var speed = rand(SPARK_SPEED, SPARK_SPEED_2);
+      this.sparks.push({
+        x: p.x, y: p.y,
+        vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
+        age: 0, life: rand(SPARK_LIFE, SPARK_LIFE_2),
+        colour: colour, size: rand(0, 1) < 0.25 ? 3 : 2
+      });
+    }
+    // the flash where the pin was
+    this.sparks.push({ x: p.x, y: p.y, vx: 0, vy: 0, age: 0, life: 0.13,
+                       colour: '#ffffff', size: 8 });
+  };
+
+  /**
+   * The fireworks. Pins go off as their fuses run out, and what they throw
+   * falls the way the marbles did - so tilting the phone leans the whole
+   * display over. When the last spark has gone out the pins are scattered
+   * afresh and it starts filling again.
+   */
+  MarblesTilt.prototype.burst = function (dt, w, h) {
+    var i, s;
+    this.bursting += dt;
+
+    if (this.pins.length) {
+      var unlit = [];
+      var crowd = this._burstPins || this.pins.length;
+      for (i = 0; i < this.pins.length; i += 1) {
+        var p = this.pins[i];
+        if (this.bursting >= p.fuse) { this.pop(p, crowd); } else { unlit.push(p); }
+      }
+      if (unlit.length !== this.pins.length) {
+        this.pins = unlit;
+        this._pinIndex = null;
+      }
+    }
+
+    var ax = this.gx * GRAVITY * SPARK_WEIGHT;
+    var ay = this.gy * GRAVITY * SPARK_WEIGHT;
+    var live = [];
+    for (i = 0; i < this.sparks.length; i += 1) {
+      s = this.sparks[i];
+      s.age += dt;
+      if (s.age >= s.life) { continue; }
+      s.vx = (s.vx + ax * dt) * SPARK_DRAG;
+      s.vy = (s.vy + ay * dt) * SPARK_DRAG;
+      s.x += s.vx * dt;
+      s.y += s.vy * dt;
+      if (s.x < -40 || s.x > w + 40 || s.y < -40 || s.y > h + 40) { continue; }
+      live.push(s);
+    }
+    this.sparks = live;
+
+    if (!this.pins.length && !this.sparks.length) { this.reset(w, h); }
   };
 
   MarblesTilt.prototype.resolve = function (a, b) {
@@ -582,15 +732,20 @@
       nx = dx / dist;
       ny = dy / dist;
     }
-    var overlap = min - dist;
-    var push = overlap * 0.45;
-    a.x -= nx * push; a.y -= ny * push;
-    b.x += nx * push; b.y += ny * push;
+    // Leaving SLOP of overlap alone is what settles a pile: chasing the last
+    // fraction of a pixel just hands the marble back and forth for ever.
+    var push = Math.max(0, min - dist - SLOP) * 0.45;
+    if (push > 0) {
+      a.x -= nx * push; a.y -= ny * push;
+      b.x += nx * push; b.y += ny * push;
+    }
 
     var rvx = b.vx - a.vx, rvy = b.vy - a.vy;
     var vn = rvx * nx + rvy * ny;
     if (vn < 0) {
-      var jimp = -(1 + MARBLE_BOUNCE) * vn / 2;
+      // Two marbles leaning on each other do not bounce; they stop.
+      var bounce = -vn > REST_SPEED ? MARBLE_BOUNCE : 0;
+      var jimp = -(1 + bounce) * vn / 2;
       var ix = jimp * nx, iy = jimp * ny;
       a.vx -= ix; a.vy -= iy;
       b.vx += ix; b.vy += iy;
@@ -600,7 +755,9 @@
 
     var tx = -ny, ty = nx;
     var vt = (b.vx - a.vx) * tx + (b.vy - a.vy) * ty;
-    var slip = vt * (1 - MARBLE_SLIDE) / 2;
+    // Barely moving across each other: grip, rather than creep about.
+    var slide = Math.abs(vt) > REST_SPEED ? MARBLE_SLIDE : REST_SLIDE;
+    var slip = vt * (1 - slide) / 2;
     a.vx += tx * slip; a.vy += ty * slip;
     b.vx -= tx * slip; b.vy -= ty * slip;
   };
@@ -618,6 +775,17 @@
     for (i = 0; i < this.pins.length; i += 1) {
       this.pin.draw(ctx, this.pins[i].x, this.pins[i].y);
     }
+
+    // Chunky squares rather than dots: the rest of the screen is 1992.
+    for (i = 0; i < this.sparks.length; i += 1) {
+      var s = this.sparks[i];
+      var left = 1 - s.age / s.life;
+      ctx.globalAlpha = left > 0.4 ? 1 : left / 0.4;
+      ctx.fillStyle = s.colour;
+      var size = Math.max(1, Math.round(s.size * (0.4 + left * 0.6)));
+      ctx.fillRect(Math.round(s.x - size / 2), Math.round(s.y - size / 2), size, size);
+    }
+    if (this.sparks.length) { ctx.globalAlpha = 1; }
   };
 
   /* ------------------------------------------------------------ element */
