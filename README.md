@@ -92,7 +92,7 @@ The decoded ones are also custom elements, so if you are hosting the files yours
 | --- | --- | --- |
 | `<after-dark-toasters>` | `modules/toasters.js` | `objects` = squadron / air wing / swarm |
 | `<after-dark-marbles>` | `modules/marbles.js` | `pins` = none / few / many / lots, `pin-size` = x-small / medium / big, `speed` = slow / medium / fast |
-| `<after-dark-marbles-tilt>` | `modules/marbles-tilt.js` | same options as marbles; gravity follows DeviceOrientation (tap to enable on iOS), and the bungee cow hanging from the top is a plumb bob you can drag or steer with the arrow keys. Embed with `allow="accelerometer; gyroscope"` on the iframe |
+| `<after-dark-marbles-tilt>` | `modules/marbles-tilt.js` | same options as marbles; gravity follows DeviceOrientation (tap to enable on iOS), and where there is no sensor the bungee cow hangs from a peg at the top as a plumb bob you can drag or steer with the arrow keys. Turning the phone over keeps the pile and the pins. Embed with `allow="accelerometer; gyroscope"` on the iframe |
 | `<after-dark-flocks>` | `modules/flocks.js` | `kind` = birds / polliwogs / gnats / paparazzi / atoms / copters / dots, `size` = small / medium / large |
 | `<after-dark-aqua>` | `modules/aqua.js` | `creatures` and `seaweed` are counts, `sea-floor` is a flag |
 | `<after-dark-marbles-40>` | `modules/marbles-40.js` | `count` = a few / a pouch full / a jar full / a box full, `pattern` |

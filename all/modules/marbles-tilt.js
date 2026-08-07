@@ -46,6 +46,9 @@
   var KEY_STEP = 7;                    // degrees of swing per key press
   var ROPE_FLOOR = 0.06;               // how near level the rope may be pulled
   var ROPE_MIN_DEG = Math.asin(ROPE_FLOOR) * 180 / Math.PI;
+  var PEG_X = 0.75;                    // her peg, across the screen
+  var COW_WAIT = 1200;                 // ms to wait for a sensor before her
+  var HINT_HOLD = 6000;                // ms the "drag the cow" line stays up
 
   function rand(a, b) { return a + Math.random() * (b - a); }
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
@@ -188,10 +191,18 @@
     return { x: this.gx / mag, y: this.gy / mag };
   };
 
-  MarblesTilt.prototype.scatter = function (w, h) {
-    this.pins = [];
-    if (!this.density || !this.pin) { return; }
-    var wanted = Math.round((w * h) / this.density);
+  /** How many pins a box this size is worth, at the chosen density. */
+  MarblesTilt.prototype.wanted = function (w, h) {
+    if (!this.density || !this.pin) { return 0; }
+    return Math.round((w * h) / this.density);
+  };
+
+  /* The pins are scattered rather than laid out, but never close enough to
+     seal a gap a marble could not fall through. Pins already down are left
+     where they are, so this both fills an empty screen and tops one up. */
+  MarblesTilt.prototype.topUp = function (w, h) {
+    var wanted = this.wanted(w, h);
+    if (!wanted) { return; }
     var gap = this.pin.width + CELL;
     var tries = 0;
     while (this.pins.length < wanted && tries < wanted * 60) {
@@ -209,10 +220,43 @@
     }
   };
 
+  MarblesTilt.prototype.scatter = function (w, h) {
+    this.pins = [];
+    this.topUp(w, h);
+  };
+
   MarblesTilt.prototype.reset = function (w, h) {
     this.marbles = [];
     this.scatter(w, h);
     this.spawn = 0;
+  };
+
+  /**
+   * The screen changed shape - which on a phone means it was turned over, and
+   * starting again would throw away the pile you were sloshing about. So keep
+   * every marble and every pin that is still on the screen, drop the pins that
+   * are not, and top the field back up to what the new shape is worth.
+   */
+  MarblesTilt.prototype.refit = function (w, h) {
+    var i;
+    if (this.pin) {
+      var padX = this.pin.width, padY = this.pin.height;
+      var kept = [];
+      for (i = 0; i < this.pins.length; i += 1) {
+        var p = this.pins[i];
+        if (p.x >= padX && p.x <= w - padX && p.y >= padY && p.y <= h - padY) {
+          kept.push(p);
+        }
+      }
+      this.pins = kept;
+    }
+    var wanted = this.wanted(w, h);
+    if (this.pins.length > wanted) { this.pins.length = wanted; }
+    this.topUp(w, h);
+
+    for (i = 0; i < this.marbles.length; i += 1) {
+      this.clampMarble(this.marbles[i], w, h);
+    }
   };
 
   /* Marbles come in over the uphill wall, spread along it, whichever wall
@@ -402,11 +446,13 @@
       self._screen = screen;
       self.sim = sim;
       self._invert = /(?:\?|&)flip(?:=|&|$)/.test(location.search || '');
+      self._armAt = Date.now() + COW_WAIT;
 
+      // Turning the phone over resizes us: keep the game going across it.
       screen.onresize = function (w, h) {
-        sim.reset(w, h);
+        sim.refit(w, h);
         self._syncControls(sim);
-        self._dirX = null;             // her peg moved with the middle of it
+        self._dirX = null;             // her peg moved with the box
         self._swingCow(sim);
       };
       sim.reset(screen.width, screen.height);
@@ -415,7 +461,7 @@
       screen.run(function (dt, ctx, w, h) {
         sim.step(dt, w, h);
         sim.draw(ctx, w, h);
-        self._swingCow(sim);           // the rope always shows where down is
+        self._tickCow(sim);            // the rope always shows where down is
       });
     }).catch(function (err) {
       self.textContent = err.message;
@@ -423,10 +469,11 @@
   };
 
   MarblesTiltElement.prototype._syncControls = function (sim) {
-    if (isImmersive(this)) {
+    this._immersive = isImmersive(this);
+    if (this._immersive) {
       this._bindMotion(sim);
-      this._showCow(sim);
       this._bindKeys(sim);
+      this._tickCow(sim);
     } else {
       this._unbindMotion();
       this._hideCow();
@@ -437,6 +484,25 @@
     }
   };
 
+  /**
+   * The cow is what you steer with when the device will not do it for you.
+   * A phone has an accelerometer, so the moment one reports she goes away -
+   * she would only be a puppet of the sensor, twitching along with its noise.
+   * Waiting COW_WAIT before putting her up stops her flashing on at load.
+   */
+  MarblesTiltElement.prototype._tickCow = function (sim) {
+    if (!this._immersive || this._cowDragging) { return; }
+    if (sim.usingSensor) {
+      if (this._cow) { this._hideCow(); }
+      return;
+    }
+    if (!this._cow) {
+      if (Date.now() < this._armAt) { return; }
+      this._showCow(sim);
+    }
+    this._swingCow(sim);
+  };
+
   /* ------------------------------------------------------------- sensors */
 
   MarblesTiltElement.prototype._bindMotion = function (sim) {
@@ -445,7 +511,7 @@
     var motionLive = false;
 
     function applyMotion(e) {
-      if (!isImmersive(self) || self._manual) { return; }
+      if (!self._immersive || self._manual) { return; }
       var ag = e.accelerationIncludingGravity;
       if (!ag || (ag.x == null && ag.y == null)) { return; }
       var ax = ag.x || 0, ay = ag.y || 0, az = ag.z || 0;
@@ -458,8 +524,11 @@
     }
 
     function applyOrientation(e) {
-      if (motionLive || !isImmersive(self) || self._manual) { return; }
+      if (motionLive || !self._immersive || self._manual) { return; }
       if (e.beta == null && e.gamma == null) { return; }
+      // A browser with no sensor at all will sometimes still fire this, full
+      // of zeroes. Dead flat is not worth taking the cow down for.
+      if (Math.abs(e.beta || 0) + Math.abs(e.gamma || 0) < 0.5) { return; }
       var g = gravityFromOrientation(e.beta, e.gamma, screenAngle(), self._invert);
       sim.setGravity(g.x, g.y);
       sim.usingSensor = true;
@@ -494,10 +563,10 @@
     return window.AfterDark && AfterDark.bust ? AfterDark.bust(raw) : raw;
   };
 
-  /** The peg she hangs from: middle of the top edge. */
+  /** The peg she hangs from: along the top edge, over to the right. */
   MarblesTiltElement.prototype._anchor = function () {
     var r = this.getBoundingClientRect();
-    return { x: r.width / 2, y: PEG_Y };
+    return { x: r.width * PEG_X, y: PEG_Y };
   };
 
   /**
@@ -559,7 +628,8 @@
     var peg = document.createElement('div');
     peg.setAttribute('aria-hidden', 'true');
     peg.style.cssText =
-      'position:absolute;left:50%;top:' + PEG_Y + 'px;width:10px;height:10px;' +
+      'position:absolute;left:' + (PEG_X * 100) + '%;top:' + PEG_Y + 'px;' +
+      'width:10px;height:10px;' +
       'margin:-5px 0 0 -5px;border-radius:50%;background:#c4a574;' +
       'border:2px solid #6a4a2a;box-sizing:border-box;z-index:3;' +
       'box-shadow:0 1px 0 #0008';
@@ -593,12 +663,19 @@
     var hint = document.createElement('div');
     hint.textContent = 'Drag the cow, or tilt with the arrow keys';
     hint.style.cssText =
-      'position:absolute;left:0;right:0;top:' + (PEG_Y + ROPE_LEN + COW_H + 14) + 'px;' +
+      'position:absolute;left:' + (PEG_X * 100) + '%;' +
+      'top:' + (PEG_Y + ROPE_LEN + COW_H + 14) + 'px;' +
+      'transform:translateX(-50%);white-space:nowrap;' +
       'z-index:2;color:#e8e0c8;text-align:center;' +
       'font:600 11px/1.2 ui-sans-serif,system-ui,sans-serif;' +
-      'text-shadow:0 1px 0 #000;pointer-events:none;opacity:0.9';
+      'text-shadow:0 1px 0 #000;pointer-events:none;opacity:0.9;' +
+      'transition:opacity 1.2s linear';
     this.appendChild(hint);
     this._cowHint = hint;
+    // It has said its piece by then, and a screen saver should be left alone.
+    this._hintTimer = setTimeout(function () {
+      if (self._cowHint) { self._cowHint.style.opacity = '0'; }
+    }, HINT_HOLD);
 
     function at(e) {
       var pt = e.touches ? e.touches[0] : e;
@@ -641,6 +718,7 @@
 
   MarblesTiltElement.prototype._hideCow = function () {
     if (this._cowDragging) { return; }
+    if (this._hintTimer) { clearTimeout(this._hintTimer); this._hintTimer = null; }
     if (this._cowOnMove) {
       window.removeEventListener('pointermove', this._cowOnMove);
       this._cowOnMove = null;
@@ -662,9 +740,10 @@
   /* -------------------------------------------------------------- keys */
 
   /**
-   * Arrows nudge gravity and the cow swings to follow. They must not read as
-   * "a key was pressed, put the screen saver away": the front page stops the
-   * saver on any key, so keep the arrows here and hand every other key on.
+   * Arrows swing the cow and gravity follows her. They must not read as "a key
+   * was pressed, put the screen saver away": the front page stops the saver on
+   * any key, so keep the arrows here and hand every other key on. With no cow
+   * up there is nothing to steer, and every key goes back to stopping it.
    */
   MarblesTiltElement.prototype._bindKeys = function (sim) {
     if (this._onKey) { return; }
@@ -673,7 +752,7 @@
       var k = e.key;
       var arrow = k === 'ArrowUp' || k === 'ArrowDown' ||
         k === 'ArrowLeft' || k === 'ArrowRight';
-      if (!arrow || !isImmersive(self)) {
+      if (!arrow || !self._cow || !self._immersive) {
         if (!e.metaKey && !e.ctrlKey && !e.altKey) { self._tellHostToStop(); }
         return;
       }
