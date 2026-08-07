@@ -6,11 +6,18 @@
  * immersive (full screen / its own tab). In the little Display Properties
  * preview it stays screen-down, so the monitor is not pulled sideways.
  *
- * The bungee cow is the manual control, and it is an honest plumb bob: she
- * hangs from a peg at the top of the screen on a rigid rope, and the rope
- * always points the way the marbles fall. Drag her round the peg, or use the
- * arrow keys, to tilt. When the accelerometer is driving, she swings to match
- * it rather than being dragged.
+ * The bungee cow is the manual control, for screens with nothing to tilt: an
+ * honest plumb bob, hanging from a peg at the top on a rigid rope that always
+ * points the way the marbles fall. Drag her round the peg, or use the arrow
+ * keys. The moment a real sensor reports she comes down - she would only be a
+ * puppet of it, twitching along with its noise.
+ *
+ * Unlike the 1992 original the pile does not snap onto a lattice, so it can be
+ * poured about; it fills for a minute or two, and when there is no room left
+ * the walls give way and the whole lot pours off the downhill edge rather than
+ * the screen blinking clean. Turning the phone over turns the field with it -
+ * same pins, same marbles, same places - since the screen has not changed, it
+ * has only been rotated.
  *
  *   <after-dark-marbles-tilt art="art/marbles2" pins="many"
  *     pin-size="medium" speed="medium"></after-dark-marbles-tilt>
@@ -35,9 +42,17 @@
   var MARBLE_SLIDE = 0.97;
   var DAMP = 0.9994;
   var PIN_HIT = 0.42;
-  var MAX_TOTAL = 220;
-  var SOLVER_PASSES = 2;
+  var SOLVER_PASSES = 3;               // a deep pile needs more than a couple
   var G_EARTH = 9.80665;
+
+  /* How full it gets before the floor drops out, as a share of the screen the
+     marbles cover - the pile is a proper drift by then rather than a scattering
+     of a couple of hundred. */
+  var FULL_SHARE = 0.18;
+  var MIN_TOTAL = 60, MAX_TOTAL = 900;
+  var FILL_TIME = 100;                 // seconds to fill, whatever the screen
+  var DRAIN_MAX = 9;                   // seconds before the last few are swept
+  var DRAIN_SHAKE = 130;               // and how hard the stragglers are shaken
 
   var ROPE_LEN = 78;                   // how far the cow hangs below her peg
   var PEG_Y = 18;                      // and how far the peg is from the top
@@ -143,6 +158,17 @@
     return { x: gx, y: gy };
   }
 
+  /**
+   * Did a w by h screen just become h by w? Not to the pixel, it never is -
+   * the browser's furniture is a different size in portrait - but close
+   * enough that this was a phone being turned over and not a window resize.
+   */
+  function swapped(w, h, nw, nh) {
+    if (!w || !h || Math.abs(w - h) < 24) { return false; }
+    return Math.abs(nw - h) < h * 0.2 && Math.abs(nh - w) < w * 0.2 &&
+      Math.abs(nw - w) > w * 0.05;
+  }
+
   /** How far the middle of a w by h box is from its edge, along a unit dir. */
   function halfExtent(dx, dy, w, h) {
     var tx = Math.abs(dx) > 1e-4 ? (w / 2) / Math.abs(dx) : Infinity;
@@ -162,12 +188,14 @@
     this.gy = 1;
     this.spawn = 0;
     this.usingSensor = false;
+    this.draining = 0;
   }
 
   MarblesTilt.prototype.setPinSize = function (name) {
     var bm = this.pinArt.bitmap(PIN_SIZES[name] || PIN_SIZES.medium);
     this.pin = bm;
     this.pinR = bm ? bm.width * PIN_HIT : 0;
+    this._pinIndex = null;
   };
 
   /* Gravity is kept as a direction and a strength, never as raw sensor units:
@@ -218,10 +246,12 @@
       }
       if (clear) { this.pins.push({ x: x, y: y }); }
     }
+    this._pinIndex = null;
   };
 
   MarblesTilt.prototype.scatter = function (w, h) {
     this.pins = [];
+    this._pinIndex = null;
     this.topUp(w, h);
   };
 
@@ -229,12 +259,55 @@
     this.marbles = [];
     this.scatter(w, h);
     this.spawn = 0;
+    this.draining = 0;
+  };
+
+  /** How many marbles this screen holds before the floor drops out. */
+  MarblesTilt.prototype.cap = function (w, h) {
+    var fits = (w * h * FULL_SHARE) / (CELL * CELL);
+    return Math.round(clamp(fits, MIN_TOTAL, MAX_TOTAL));
   };
 
   /**
-   * The screen changed shape - which on a phone means it was turned over, and
-   * starting again would throw away the pile you were sloshing about. So keep
-   * every marble and every pin that is still on the screen, drop the pins that
+   * A quarter turn of the screen, `q` times. The phone did not move the pins
+   * or the pile - the page turned underneath them - so turn them back: what
+   * was at (x, y) on a w by h screen is at (y, w - x) on the h by w one. The
+   * two shapes are never quite each other's transpose, since the browser's
+   * furniture is a different size in portrait, so the field is stretched onto
+   * whatever the new screen actually is rather than losing its edges.
+   */
+  MarblesTilt.prototype.turn = function (q, w, h, nw, nh) {
+    q = ((Math.round(q) % 4) + 4) % 4;
+    var all = this.pins.concat(this.marbles);
+    var i, k, p, x, vx;
+    for (k = 0; k < q; k += 1) {
+      for (i = 0; i < all.length; i += 1) {
+        p = all[i];
+        x = p.x;
+        p.x = p.y;
+        p.y = w - x;
+        if (p.vx !== undefined) {
+          vx = p.vx;
+          p.vx = p.vy;
+          p.vy = -vx;
+        }
+      }
+      x = w; w = h; h = x;
+    }
+    var sx = nw / w, sy = nh / h;
+    for (i = 0; i < all.length; i += 1) {
+      all[i].x *= sx;
+      all[i].y *= sy;
+    }
+    for (i = 0; i < this.marbles.length; i += 1) {
+      this.clampMarble(this.marbles[i], nw, nh);
+    }
+    this._pinIndex = null;
+  };
+
+  /**
+   * The screen changed shape without turning - a window being dragged about.
+   * Keep every marble and every pin that is still on it, drop the pins that
    * are not, and top the field back up to what the new shape is worth.
    */
   MarblesTilt.prototype.refit = function (w, h) {
@@ -253,6 +326,7 @@
     var wanted = this.wanted(w, h);
     if (this.pins.length > wanted) { this.pins.length = wanted; }
     this.topUp(w, h);
+    this._pinIndex = null;
 
     for (i = 0; i < this.marbles.length; i += 1) {
       this.clampMarble(this.marbles[i], w, h);
@@ -283,21 +357,91 @@
     this.marbles.push(m);
   };
 
+  /**
+   * The pins never move, so they go into their own grid once and stay there.
+   * Cells are at least a hit wide, so the nine around a marble are all it can
+   * possibly be touching. Anything that moves the pins clears `_pinIndex`.
+   */
+  MarblesTilt.prototype.indexPins = function (w, h) {
+    var size = Math.max(CELL * 2, Math.ceil((this.pinR + R) * 2));
+    var cols = Math.max(1, Math.ceil(w / size));
+    var rows = Math.max(1, Math.ceil(h / size));
+    var buckets = new Array(cols * rows);
+    for (var i = 0; i < this.pins.length; i += 1) {
+      var p = this.pins[i];
+      var c = clamp(Math.floor(p.y / size), 0, rows - 1) * cols +
+        clamp(Math.floor(p.x / size), 0, cols - 1);
+      if (!buckets[c]) { buckets[c] = []; }
+      buckets[c].push(p);
+    }
+    this._pinIndex = { size: size, cols: cols, rows: rows, buckets: buckets };
+  };
+
+  /** Bounce a marble off any pin it has run into. */
+  MarblesTilt.prototype.hitPins = function (m) {
+    var idx = this._pinIndex;
+    if (!idx) { return; }
+    var hit = this.pinR + m.r;
+    var cx = clamp(Math.floor(m.x / idx.size), 0, idx.cols - 1);
+    var cy = clamp(Math.floor(m.y / idx.size), 0, idx.rows - 1);
+    for (var gy = cy - 1; gy <= cy + 1; gy += 1) {
+      if (gy < 0 || gy >= idx.rows) { continue; }
+      for (var gx = cx - 1; gx <= cx + 1; gx += 1) {
+        if (gx < 0 || gx >= idx.cols) { continue; }
+        var bucket = idx.buckets[gy * idx.cols + gx];
+        if (!bucket) { continue; }
+        for (var k = 0; k < bucket.length; k += 1) {
+          var p = bucket[k];
+          var dx = m.x - p.x, dy = m.y - p.y;
+          var d = Math.hypot(dx, dy);
+          if (d > 0 && d < hit) {
+            var nx = dx / d, ny = dy / d;
+            m.x = p.x + nx * hit;
+            m.y = p.y + ny * hit;
+            var into = m.vx * nx + m.vy * ny;
+            if (into < 0) {
+              m.vx = (m.vx - 2 * into * nx) * BOUNCE + rand(-10, 10);
+              m.vy = (m.vy - 2 * into * ny) * BOUNCE;
+            }
+            if (m.sensitive) { m.oh = OH; }
+          }
+        }
+      }
+    }
+  };
+
   MarblesTilt.prototype.clampMarble = function (m, w, h) {
     m.x = clamp(m.x, m.r, w - m.r);
     m.y = clamp(m.y, m.r, h - m.r);
   };
 
   MarblesTilt.prototype.step = function (dt, w, h) {
-    var i, j, m;
+    var i, m;
     dt = Math.min(dt * (this.speed / SPEEDS.medium), 0.05);
 
-    this.spawn -= dt;
-    if (this.spawn <= 0 && this.marbles.length < MAX_TOTAL) {
-      this.spawn = rand(0.14, 0.36);
-      this.release(w, h);
+    if (!this._pinIndex || this._pinW !== w || this._pinH !== h) {
+      this.indexPins(w, h);
+      this._pinW = w;
+      this._pinH = h;
     }
 
+    if (this.draining > 0) {
+      this.drain(dt, w, h);
+    } else {
+      var full = this.cap(w, h);
+      this.spawn -= dt;
+      if (this.spawn <= 0) {
+        // A big screen holds more, so it is fed faster: the pile takes about
+        // as long to build either way, rather than the phone racing ahead.
+        this.spawn = rand(0.85, 1.35) * clamp(FILL_TIME / full, 0.09, 0.36);
+        this.release(w, h);
+      }
+      // Full. Rather than blinking the screen clean, the walls give way and
+      // the whole pile pours off whichever edge is downhill.
+      if (this.marbles.length >= full) { this.draining = DRAIN_MAX; }
+    }
+
+    var open = this.draining > 0;
     var ax = this.gx * GRAVITY;
     var ay = this.gy * GRAVITY;
 
@@ -311,7 +455,14 @@
       m.y += m.vy * dt;
       if (m.oh > 0) { m.oh -= dt; }
 
-      if (m.x < m.r) {
+      if (open) {
+        // No walls while it empties - but shake anything that has come to rest
+        // on a pin, so the last few do not sit there holding it up.
+        if (Math.hypot(m.vx, m.vy) < 30) {
+          m.vx += rand(-DRAIN_SHAKE, DRAIN_SHAKE) * dt;
+          m.vy += rand(-DRAIN_SHAKE, DRAIN_SHAKE) * dt;
+        }
+      } else if (m.x < m.r) {
         m.x = m.r;
         m.vx = Math.abs(m.vx) * WALL_BOUNCE;
         m.vy *= WALL_SLIDE;
@@ -320,58 +471,117 @@
         m.vx = -Math.abs(m.vx) * WALL_BOUNCE;
         m.vy *= WALL_SLIDE;
       }
-      if (m.y < m.r) {
-        m.y = m.r;
-        m.vy = Math.abs(m.vy) * WALL_BOUNCE;
-        m.vx *= WALL_SLIDE;
-      } else if (m.y > h - m.r) {
-        m.y = h - m.r;
-        m.vy = -Math.abs(m.vy) * WALL_BOUNCE;
-        m.vx *= WALL_SLIDE;
-      }
-
-      for (j = 0; j < this.pins.length; j += 1) {
-        var p = this.pins[j];
-        var dx = m.x - p.x, dy = m.y - p.y;
-        var d = Math.hypot(dx, dy);
-        var hit = this.pinR + m.r;
-        if (d > 0 && d < hit) {
-          var nx = dx / d, ny = dy / d;
-          m.x = p.x + nx * hit;
-          m.y = p.y + ny * hit;
-          var into = m.vx * nx + m.vy * ny;
-          if (into < 0) {
-            m.vx = (m.vx - 2 * into * nx) * BOUNCE + rand(-10, 10);
-            m.vy = (m.vy - 2 * into * ny) * BOUNCE;
-          }
-          if (m.sensitive) { m.oh = OH; }
+      if (!open) {
+        if (m.y < m.r) {
+          m.y = m.r;
+          m.vy = Math.abs(m.vy) * WALL_BOUNCE;
+          m.vx *= WALL_SLIDE;
+        } else if (m.y > h - m.r) {
+          m.y = h - m.r;
+          m.vy = -Math.abs(m.vy) * WALL_BOUNCE;
+          m.vx *= WALL_SLIDE;
         }
       }
+
+      this.hitPins(m);
     }
 
     for (var pass = 0; pass < SOLVER_PASSES; pass += 1) {
-      for (i = 0; i < this.marbles.length; i += 1) {
-        for (j = i + 1; j < this.marbles.length; j += 1) {
-          this.resolve(this.marbles[i], this.marbles[j]);
-        }
-      }
+      this.solve(w, h);
     }
 
     // Solver soft-pushes can sneak past the floor - clamp hard so a tilt does
     // not leak marbles off the edge of the visible canvas.
-    for (i = 0; i < this.marbles.length; i += 1) {
-      this.clampMarble(this.marbles[i], w, h);
+    if (!open) {
+      for (i = 0; i < this.marbles.length; i += 1) {
+        this.clampMarble(this.marbles[i], w, h);
+      }
+    }
+  };
+
+  /**
+   * Push apart everything that overlaps. A screenful is several hundred
+   * marbles and every pair is far too many, so they go into a grid one marble
+   * across and each only looks at the nine cells around it. The buckets are
+   * kept as linked lists in two flat arrays, reused frame to frame.
+   */
+  MarblesTilt.prototype.solve = function (w, h) {
+    var list = this.marbles, n = list.length;
+    if (n < 2) { return; }
+    var cols = Math.max(1, Math.ceil(w / CELL));
+    var rows = Math.max(1, Math.ceil(h / CELL));
+    var cells = cols * rows;
+    var i, c;
+
+    if (!this._head || this._head.length < cells) { this._head = new Int32Array(cells); }
+    if (!this._next || this._next.length < n) { this._next = new Int32Array(n * 2); }
+    var head = this._head, next = this._next;
+    head.fill(-1, 0, cells);
+
+    for (i = 0; i < n; i += 1) {
+      c = clamp(Math.floor(list[i].y / CELL), 0, rows - 1) * cols +
+        clamp(Math.floor(list[i].x / CELL), 0, cols - 1);
+      next[i] = head[c];
+      head[c] = i;
     }
 
-    if (this.marbles.length >= MAX_TOTAL) { this.reset(w, h); }
+    for (i = 0; i < n; i += 1) {
+      var m = list[i];
+      var cx = clamp(Math.floor(m.x / CELL), 0, cols - 1);
+      var cy = clamp(Math.floor(m.y / CELL), 0, rows - 1);
+      for (var gy = cy - 1; gy <= cy + 1; gy += 1) {
+        if (gy < 0 || gy >= rows) { continue; }
+        for (var gx = cx - 1; gx <= cx + 1; gx += 1) {
+          if (gx < 0 || gx >= cols) { continue; }
+          var j = head[gy * cols + gx];
+          while (j >= 0) {
+            // Each pair turns up in both marbles' neighbourhoods; take it once.
+            if (j > i) { this.resolve(m, list[j]); }
+            j = next[j];
+          }
+        }
+      }
+    }
+  };
+
+  /**
+   * The emptying. Gravity still applies and still follows the phone, so the
+   * pile pours out of whichever edge you tilt towards; marbles that are well
+   * clear of the screen are forgotten. When the last one has gone - or when
+   * DRAIN_MAX is up and something is still wedged - the pins are scattered
+   * afresh and it starts filling again.
+   */
+  MarblesTilt.prototype.drain = function (dt, w, h) {
+    this.draining -= dt;
+    var gone = CELL * 3;
+    var kept = [];
+    for (var i = 0; i < this.marbles.length; i += 1) {
+      var m = this.marbles[i];
+      if (m.x > -gone && m.x < w + gone && m.y > -gone && m.y < h + gone) {
+        kept.push(m);
+      }
+    }
+    this.marbles = kept;
+    if (!kept.length || this.draining <= 0) { this.reset(w, h); }
   };
 
   MarblesTilt.prototype.resolve = function (a, b) {
     var dx = b.x - a.x, dy = b.y - a.y;
-    var dist = Math.hypot(dx, dy) || 0.0001;
+    var dist = Math.hypot(dx, dy);
     var min = a.r + b.r;
     if (dist >= min) { return; }
-    var nx = dx / dist, ny = dy / dist;
+    var nx, ny;
+    if (dist < 0.001) {
+      // Landed dead on top of one another: there is no direction to push
+      // along, so pick one, or the two of them stay welded together forever.
+      var ang = rand(0, Math.PI * 2);
+      nx = Math.cos(ang);
+      ny = Math.sin(ang);
+      dist = 0.001;
+    } else {
+      nx = dx / dist;
+      ny = dy / dist;
+    }
     var overlap = min - dist;
     var push = overlap * 0.45;
     a.x -= nx * push; a.y -= ny * push;
@@ -448,13 +658,28 @@
       self._invert = /(?:\?|&)flip(?:=|&|$)/.test(location.search || '');
       self._armAt = Date.now() + COW_WAIT;
 
-      // Turning the phone over resizes us: keep the game going across it.
+      /**
+       * Turning the phone over resizes us. The screen did not lose anything -
+       * it is the same screen, turned - so turn the field with it and nothing
+       * has to be thrown away or made up. A resize that is not a turn (a
+       * window being dragged about) has to fit the field to the new shape.
+       */
       screen.onresize = function (w, h) {
-        sim.refit(w, h);
+        var was = self._angle;
+        var now = screenAngle();
+        var q = Math.round((((now - was) % 360) + 360) % 360 / 90) % 4;
+        if (!q && swapped(self._w, self._h, w, h)) { q = 1; }
+        self._angle = now;
+        if (q) { sim.turn(q, self._w, self._h, w, h); } else { sim.refit(w, h); }
+        self._w = w;
+        self._h = h;
         self._syncControls(sim);
         self._dirX = null;             // her peg moved with the box
         self._swingCow(sim);
       };
+      self._angle = screenAngle();
+      self._w = screen.width;
+      self._h = screen.height;
       sim.reset(screen.width, screen.height);
       self._syncControls(sim);
 
