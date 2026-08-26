@@ -1,0 +1,72 @@
+{
+ "module": "BOGGLINS",
+ "format": "dib",
+ "bitmaps": {
+  "2111": {
+   "w": 153,
+   "h": 156,
+   "id": 2111,
+   "file": "2111.png"
+  },
+  "2112": {
+   "w": 153,
+   "h": 156,
+   "id": 2112,
+   "file": "2112.png"
+  },
+  "2113": {
+   "w": 153,
+   "h": 156,
+   "id": 2113,
+   "file": "2113.png"
+  },
+  "2114": {
+   "w": 153,
+   "h": 156,
+   "id": 2114,
+   "file": "2114.png"
+  },
+  "2115": {
+   "w": 153,
+   "h": 156,
+   "id": 2115,
+   "file": "2115.png"
+  },
+  "2116": {
+   "w": 153,
+   "h": 156,
+   "id": 2116,
+   "file": "2116.png"
+  },
+  "2117": {
+   "w": 153,
+   "h": 156,
+   "id": 2117,
+   "file": "2117.png"
+  },
+  "2118": {
+   "w": 153,
+   "h": 156,
+   "id": 2118,
+   "file": "2118.png"
+  },
+  "2119": {
+   "w": 153,
+   "h": 156,
+   "id": 2119,
+   "file": "2119.png"
+  },
+  "2120": {
+   "w": 153,
+   "h": 156,
+   "id": 2120,
+   "file": "2120.png"
+  }
+ },
+ "text": [
+  "Distribute",
+  "Bogglins",
+  "BOGGLINS (tm)\r\n\r\nA Bogglin is sort of a cross between Santa Claus and a pickle. He has apparently just eaten several hundred pounds of something that doesn't agree with him.\r\n\r\nThis example of Manga (Japanese-style cartooning) was written by Andy Karn, based on animated art submitted by Dann Auld to the 1992 After Dark Contest.\r\n\r\nWindows version by:\r\nPaul Sasse\r\nSAPIEN Technologies, Inc.\r\nRichmond, CA\r\n\r\nOriginal Mac version by:\r\nDann Auld and Andy Karn\r\n",
+  "dules."
+ ]
+}

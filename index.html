@@ -6,7 +6,7 @@
   <title>After Dark in the Browser</title>
   <meta name="description" content="After Dark screensavers running in the browser — the CSS recreations, plus new ones built from artwork decoded straight out of the original Windows modules.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="img/favicon.png?v=9815f21-260807113913" />
+  <link rel="shortcut icon" href="img/favicon.png?v=bc21638-260826172024" />
   <style>
     /* ------------------------------------------------------------------
        Windows 95 Display Properties, which is where After Dark 4.0 for
@@ -357,7 +357,7 @@
 
   <div class="window">
     <div class="titlebar">
-      <img src="img/after-dark-icon.png?v=9815f21-260807113913" alt="" width="16" height="16">
+      <img src="img/after-dark-icon.png?v=bc21638-260826172024" alt="" width="16" height="16">
       <span class="grow">Display Properties</span>
       <span class="btn out" aria-hidden="true">_</span>
       <span class="btn out" aria-hidden="true">&#9633;</span>
@@ -437,7 +437,7 @@
 
   <div class="taskbar">
     <a class="start" href="https://github.com/Vortitron/after-dark-css">
-      <img src="img/favicon.png?v=9815f21-260807113913" alt="" width="14" height="14"> Source
+      <img src="img/favicon.png?v=bc21638-260826172024" alt="" width="14" height="14"> Source
     </a>
     <span>After Dark &copy; 1989&ndash;1998 Berkeley Systems</span>
     <span class="tray" id="build" title="Build stamp — bumps when GitHub Pages is updated">…</span>
@@ -445,7 +445,7 @@
   </div>
 
   <!-- ad-build -->
-  <script>window.AFTER_DARK_BUILD = {"rev": "9815f21", "time": "2026-08-07T11:39:13Z", "label": "07 Aug 11:39 UTC", "v": "9815f21-260807113913"};</script>
+  <script>window.AFTER_DARK_BUILD = {"rev": "bc21638", "time": "2026-08-26T17:20:24Z", "label": "26 Aug 17:20 UTC", "v": "bc21638-260826172024"};</script>
   <!-- /ad-build -->
 
   <script>
@@ -455,18 +455,42 @@
       /* Decoded modules, roughly by era, with variants kept beside their parent. */
       { name: 'Flying Toasters', file: 'all/toasters.html',        kind: 'ripped', tag: 'TOAST3.AD 1992',
         js: 'toasters', el: 'after-dark-toasters', attrs: 'art="all/art/toast3" objects="air wing"' },
+      { name: 'Flying Toilets',  file: 'all/toilets.html',         kind: 'ripped', tag: 'TOILETS.AD 1992',
+        js: 'toilets', el: 'after-dark-toilets', attrs: 'art="all/art/toilets" crowd="more" paper="random" occupant="random"' },
       { name: 'Marbles',         file: 'all/marbles.html',         kind: 'ripped', tag: 'MARBLES2.AD 1992',
         js: 'marbles', el: 'after-dark-marbles', attrs: 'art="all/art/marbles2" pins="many" pin-size="medium" speed="medium"' },
       { name: 'Marbles (Tilt)',  file: 'all/marbles-tilt.html',    kind: 'ripped', tag: 'MARBLES2 + accel',
         js: 'marbles-tilt', el: 'after-dark-marbles-tilt', attrs: 'art="all/art/marbles2" pins="many" pin-size="medium" speed="medium"' },
       { name: 'Flocks',          file: 'all/flocks.html',          kind: 'ripped', tag: 'FLOCKS.AD 1992',
         js: 'flocks', el: 'after-dark-flocks', attrs: 'art="all/art/flocks" kind="birds" size="medium"' },
+      { name: 'Rebound',         file: 'all/rebound.html',         kind: 'ripped', tag: 'REBOUND.AD 1992',
+        js: 'rebound', el: 'after-dark-rebound', attrs: 'art="all/art/rebound" ball-type="both" balls="more" wobbly clear-screen' },
+      { name: 'Bogglins',        file: 'all/bogglins.html',        kind: 'ripped', tag: 'BOGGLINS.AD 1992',
+        js: 'bogglins', el: 'after-dark-bogglins', attrs: 'art="all/art/bogglins" explosivity="volatile" twanginess="zesty"' },
+      { name: 'Om Appliances',   file: 'all/om.html',              kind: 'ripped', tag: 'OM.AD 1992',
+        js: 'om', el: 'after-dark-om', attrs: 'art="all/art/om" entities="some" life-energy="3000 kwh" defrost="often" washer-karma="average"' },
+      { name: 'Gravity',         file: 'all/gravity.html',         kind: 'ripped', tag: 'GRAVITY.AD 3.x',
+        js: 'gravity', el: 'after-dark-gravity', attrs: 'balls="4" size="medium" colors clear-screen' },
+      { name: 'Snake',           file: 'all/snake.html',           kind: 'ripped', tag: 'SNAKE.AD 3.x',
+        js: 'snake', el: 'after-dark-snake', attrs: 'speed="medium" maze-complexity="medium" pause-when-done="5 sec"' },
+      { name: 'Zot!',            file: 'all/zot.html',             kind: 'ripped', tag: 'ZOT.AD 3.x',
+        js: 'zot', el: 'after-dark-zot', attrs: 'forkiness="forky" kinkiness="kinky" how-often="often"' },
+      { name: 'Down the Drain',  file: 'all/draino.html',          kind: 'ripped', tag: 'DRAINO.AD 3.x',
+        js: 'draino', el: 'after-dark-draino', attrs: 'speed="medium" direction="clockwise" drops show-drain' },
+      { name: 'Shapes',          file: 'all/shapes.html',          kind: 'ripped', tag: 'SHAPES.AD 3.x',
+        js: 'shapes', el: 'after-dark-shapes', attrs: 'color clear-screen' },
+      { name: 'Spheres',         file: 'all/spheres.html',         kind: 'ripped', tag: 'SPHERES.AD 3.x',
+        js: 'spheres', el: 'after-dark-spheres', attrs: 'max-size="50" offset="10" clear-every="100" clear-screen' },
       { name: 'Aquatic Realm',   file: 'all/aqua.html',            kind: 'ripped', tag: 'Aqua.ad',
         js: 'aqua', el: 'after-dark-aqua', attrs: 'art="all/art/aqua" creatures="14" seaweed="6"' },
       { name: 'Fish Pro',        file: 'all/fishpro.html',         kind: 'ripped', tag: 'FISHPRO.AD 1994',
         js: 'fishpro', el: 'after-dark-fishpro', attrs: 'art="all/art/fishpro" fish="school" sea-floor="animated"' },
+      { name: 'Fish World',      file: 'all/fish-world.html',      kind: 'ripped', tag: 'FISH.AD 4.0',
+        js: 'fish-world', el: 'after-dark-fish-world', attrs: 'art="all/art/fish" show-background' },
       { name: 'Bugs',            file: 'all/bugs.html',            kind: 'ripped', tag: 'BUGS.AD 1994',
         js: 'bugs', el: 'after-dark-bugs', attrs: 'art="all/art/bugs" density="infestation" type="all"' },
+      { name: 'Rainforest',      file: 'all/rainforest.html',      kind: 'ripped', tag: 'RAIN.AD 4.0',
+        js: 'rainforest', el: 'after-dark-rainforest', attrs: 'art="all/art/rain" number="some" background="leaves" foliage' },
       { name: 'Bungee Roulette', file: 'all/bungee.html',          kind: 'ripped', tag: 'BUNGEE.AD 1995',
         js: 'bungee', el: 'after-dark-bungee', attrs: 'art="all/art/bungee" jumper="random" jumps="many" equipment="so - so"' },
       { name: 'Chameleon',       file: 'all/cham.html',            kind: 'ripped', tag: 'CHAM.AD 1995',
@@ -506,6 +530,14 @@
       toasters: [
         { name: 'objects', label: 'Objects', values: ['air wing', 'squadron', 'swarm'] }
       ],
+      toilets: [
+        { name: 'crowd', label: 'Crowd',
+          values: ['more', 'few', 'lots more', 'not pretty', 'phew!'] },
+        { name: 'paper', label: 'Paper',
+          values: ['random', 'white', 'pastel', 'cow print'] },
+        { name: 'occupant', label: 'Occupant',
+          values: ['random', 'nobody', "dumpin' dan", 'bessie', 'aaron'] }
+      ],
       marbles: [
         { name: 'pins', label: 'Pins', values: ['many', 'none', 'few', 'lots'] },
         { name: 'pin-size', label: 'Pin Size', values: ['medium', 'x-small', 'big'] },
@@ -532,10 +564,81 @@
           values: ['birds', 'polliwogs', 'gnats', 'paparazzi', 'atoms', 'copters', 'dots'] },
         { name: 'size', label: 'Size', values: ['medium', 'small', 'large'] }
       ],
+      rebound: [
+        { name: 'ball-type', label: 'Ball Type', values: ['both', 'plastic', 'metal'] },
+        { name: 'balls', label: 'Balls',
+          values: ['more', 'not many', 'lots more', 'bunches', 'oodles'] },
+        { name: 'wobbly', label: 'Wobbly', check: true, on: true },
+        { name: 'clear-screen', label: 'Clear Screen First', check: true, on: true }
+      ],
+      bogglins: [
+        { name: 'explosivity', label: 'Explosivity',
+          values: ['volatile', 'unstable', 'dangerous', 'evacuate!'] },
+        { name: 'twanginess', label: 'Twanginess',
+          values: ['zesty', 'mild', 'rich', 'sharp'] }
+      ],
+      om: [
+        { name: 'entities', label: 'Entities',
+          values: ['some', 'few', 'more', 'lots'] },
+        { name: 'life-energy', label: 'Life Energy',
+          values: ['3000 kwh', '1000 kwh', '2000 kwh', '4000 kwh', '5000 kwh'] },
+        { name: 'defrost', label: 'Defrost',
+          values: ['often', 'never', 'rarely', 'occasionally', 'very often',
+                   'almost always', 'constantly'] },
+        { name: 'washer-karma', label: 'Washer Karma',
+          values: ['average', 'none', 'a little', 'some', 'lots', 'complete'] }
+      ],
+      gravity: [
+        { name: 'balls', label: 'Number Balls',
+          values: ['4', '1', '2', '3', '5', '6', '7'] },
+        { name: 'size', label: 'Size', values: ['medium', 'small', 'large'] },
+        { name: 'colors', label: 'Colors', check: true, on: true },
+        { name: 'clear-screen', label: 'Clear Screen First', check: true, on: true }
+      ],
+      snake: [
+        { name: 'speed', label: 'Solution Speed',
+          values: ['medium', 'slow', 'fast'] },
+        { name: 'maze-complexity', label: 'Maze Complexity',
+          values: ['medium', 'simple', 'twisty'] },
+        { name: 'pause-when-done', label: 'Pause When Done',
+          values: ['5 sec', '0 sec', '1 sec', '3 sec', '10 sec', '15 sec', '30 sec', '1 min'] }
+      ],
+      zot: [
+        { name: 'forkiness', label: 'Forkiness',
+          values: ['forky', 'few', 'max forky!'] },
+        { name: 'kinkiness', label: 'Kinkiness',
+          values: ['kinky', 'no kinks', 'deviant'] },
+        { name: 'how-often', label: 'How Often',
+          values: ['often', 'rarely', 'sometimes', 'stormy!'] }
+      ],
+      draino: [
+        { name: 'speed', label: 'Speed', values: ['medium', 'slow', 'fast'] },
+        { name: 'direction', label: 'Direction',
+          values: ['clockwise', 'inward', 'counter'] },
+        { name: 'drops', label: 'Drops', check: true, on: true },
+        { name: 'show-drain', label: 'Show Drain', check: true, on: true }
+      ],
+      shapes: [
+        { name: 'clear-screen', label: 'Clear Screen First', check: true, on: true },
+        { name: 'color', label: 'Color', check: true, on: true }
+      ],
+      spheres: [
+        { name: 'max-size', label: 'Max Size', values: ['50', '20', '80', '100'] },
+        { name: 'offset', label: 'Offset', values: ['10', '0', '30', '60'] },
+        { name: 'clear-every', label: 'Clear Every', values: ['100', '20', '50', '200'] },
+        { name: 'clear-screen', label: 'Clear Screen First', check: true, on: true }
+      ],
       fishpro: [
         { name: 'fish', label: 'Fish',
           values: ['school', 'solo', 'study group', 'class', 'university'] },
         { name: 'sea-floor', label: 'Show Sea Floor', values: ['animated', 'none', 'static'] }
+      ],
+      'fish-world': [
+        { name: 'select-fish', label: 'Fish',
+          values: ['', 'Blue Bird Wrasse', 'Boxfish', 'Sea Horse', 'Filefish',
+                   'Mandarin', 'Pajama Cardinal', 'Picasso', 'Pufferfish', 'Tamarin'],
+          blank: 'All' },
+        { name: 'show-background', label: 'Show Background', check: true, on: true }
       ],
       bugs: [
         { name: 'density', label: 'Bug Density',
@@ -543,6 +646,16 @@
         { name: 'type', label: 'Bug Type',
           values: ['all', 'scarab', 'jewel', 'roaches', 'ants', 'ladybugs', 'flys'] },
         { name: 'clear-screen', label: 'Clear Screen First', check: true, on: true }
+      ],
+      rainforest: [
+        { name: 'type', label: 'Creatures',
+          values: ['all', 'dragonfly', 'peruvian', 'lehman', 'beetle', 'butterfly', 'turtle'] },
+        { name: 'number', label: 'Number',
+          values: ['some', 'few', 'many', 'hordes'] },
+        { name: 'background', label: 'Background',
+          values: ['leaves', 'desktop', 'black', 'wet blue', 'moss', 'lichen',
+                   'rock', 'mottled', 'soft green', 'random'] },
+        { name: 'foliage', label: 'Foliage', check: true, on: true }
       ],
       cham: [
         { name: 'quantity', label: 'Quantity',
@@ -621,13 +734,11 @@
       var chosen = picked[saver.js];
       if (!chosen || !Object.keys(chosen).length) { return saver.attrs; }
       var out = saver.attrs.replace(/^(art="[^"]*")\s*/, '$1\n  ');
-      var keep = out.split(/\s+(?=[a-z-]+=")/).filter(function (bit) {
-        return !Object.prototype.hasOwnProperty.call(chosen, bit.split('=')[0].trim());
-      });
       Object.keys(chosen).forEach(function (k) {
-        keep.push(k + '="' + chosen[k] + '"');
+        out = out.replace(new RegExp('(?:^|\\s)' + k + '(?:="[^"]*")?(?=\\s|$)', 'g'), '');
+        out += ' ' + k + '="' + chosen[k] + '"';
       });
-      return keep.join(' ');
+      return out.replace(/[ \t]+/g, ' ').replace(/\n /g, '\n  ').trim();
     }
 
     function title(v) {
@@ -829,8 +940,10 @@
                 '<script src="all/modules/' + s.js + '.js"><\/script>\n' +
                 '<' + s.el + ' ' + attrsFor(s) + '\n' +
                 '  style="display:block;width:640px;height:480px"></' + s.el + '>',
-          note: 'Needs ad.js, modules/' + s.js + '.js and all/art/ copied across, ' +
-                'and the page served over http — the artwork is fetched, so file:// will not do.'
+          note: s.attrs && /(?:^|\s)art=/.test(s.attrs)
+            ? ('Needs ad.js, modules/' + s.js + '.js and all/art/ copied across, ' +
+               'and the page served over http — the artwork is fetched, so file:// will not do.')
+            : ('Needs ad.js and modules/' + s.js + '.js copied across.')
         });
       }
       return out;

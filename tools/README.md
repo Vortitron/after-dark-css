@@ -12,6 +12,10 @@ AD40/**/*.AD  ──adextract.py──▶  raw resources
               ──adrun.sh─────▶  the real thing running under Wine (reference)
 ```
 
+`node tools/test-savers.js` checks Gravity, Snake, Zot!, Bogglins, Om
+Appliances, Fish World, Rainforest, Down the Drain, Shapes and Spheres
+without a browser.
+
 There are two artwork formats, and which one a module uses does not follow from
 whether it is 16-bit or 32-bit. Run both tools and see which bites.
 
@@ -78,6 +82,12 @@ either one leaves half the library with its sprites punched out.
 Aquatic Realm has 16-colour art, 256-colour art and three bands of masks, 193
 bitmaps for 19 creatures; only `1000-1118` is worth exporting.
 
+A few 4.0 modules keep extra still pictures as PE `BITMAP` resources that
+start with a `BITMAPINFOHEADER` (`0x28`) rather than `BM`, so `adclassic.py`
+skips them. Fish World and Rainforest have a set of these (species / creature
+picker icons at 80×64 and 80×60); they are not tiled backgrounds. `all/ad.js`
+loads both `sequences` and `bitmaps` from the same `index.json`.
+
 ## adweb.py — web assets
 
 ```sh
@@ -107,18 +117,21 @@ line between the two is not where the bitmap count suggests. What decides it is
 whether a sprite is a whole thing that moves on its own:
 
 - **Sprite-per-object.** Marbles, Flying Toasters, Flocks, Aquatic Realm, Fish
-  Pro, Bugs. Each bitmap is a complete marble or bird or fish, the module's
+  Pro, Fish World, Bugs, Rainforest, Rebound, Bogglins and Om Appliances. Each bitmap is a complete marble, bird, fish, ball, blob, appliance or jungle creature, the module's
   settings say how many and how fast, and the rest is motion. These are done.
   Two of them carry their facing in the artwork rather than needing it guessed:
   every Fish Pro species is a broadside cycle followed by the fish rotating
   away until it is edge-on, and the Bugs jewel beetle, ant and fly each ship a
   quarter turn of pre-rendered headings that a mirror in x and y completes.
+  Fish World and Rainforest skip shrinking turn-views and grey shadow frames
+  and mirror the remaining swim or flap.
 - **Composed characters.** Swan Lake keeps bodies (`600-608`), necks
   (`300-307`) and water reflections (`700-707`) as separate bitmaps that have
   to be layered at the right offsets. Flying Toilets is a toilet plus a
   detached pair of wings. Bugs' spiders are fifteen frames of one jointed leg
   at the end of `4000` and `6000`, with no body anywhere. The offsets are in
-  the code, not the resources.
+  the code, not the resources. Flying Toilets is now running by composing its
+  occupant, toilet, wing and trailing-object frames in the browser.
 - **Staged scenes.** Confetti Factory has ducks, gears, conveyor belts and two
   wall styles but no picture of the factory. Bad Dog needs a desktop and Rat
   Race a track. The layout was drawn in code and is simply not recoverable
@@ -151,8 +164,11 @@ table. Guernsey paints too, which is the way to fix its palette: its sprites
 decode to grey noise because neither a CTAB nor a module PAL turns up for it,
 and a capture says what the colours should be.
 
-Nothing here helps the 45 modules with no artwork at all. Those draw
-themselves, and no amount of watching them changes that.
+The 45 modules with no artwork at all draw themselves, so porting one means
+writing the drawing. Gravity, Snake, Zot!, Down the Drain, Shapes and Spheres
+are the ones of those that run in the browser so far: Newtonian balls, a maze
+the snake solves, lightning, a vortex into a plughole, geometric stamps, and
+shaded orbs.
 
 ## adrun.sh — running the originals
 

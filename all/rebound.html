@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Rebound Screensaver | After Dark in the Browser</title>
+	<meta name="description" content="After Dark's Rebound screensaver, running in the browser with ball artwork decoded from the original REBOUND.AD module.">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="shortcut icon" href="../img/favicon.png?v=bc21638-260826172024">
+	<link rel="stylesheet" href="base.css?v=bc21638-260826172024">
+	<style>
+		html, body { height: 100%; }
+		body { background: #000; margin: 0; overflow: hidden; }
+		after-dark-rebound { position: absolute; inset: 0; display: block; }
+	</style>
+</head>
+<body>
+	<h1 class="visuallyhidden">Rebound Screensaver - After Dark in the Browser</h1>
+
+	<after-dark-rebound art="art/rebound" ball-type="both" balls="more"
+		wobbly clear-screen></after-dark-rebound>
+
+	<script src="ad.js?v=bc21638-260826172024"></script>
+	<script src="modules/rebound.js?v=bc21638-260826172024"></script>
+</body>
+</html>

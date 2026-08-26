@@ -1,0 +1,54 @@
+{
+ "module": "OM",
+ "format": "dib",
+ "bitmaps": {
+  "2101": {
+   "w": 61,
+   "h": 98,
+   "id": 2101,
+   "file": "2101.png"
+  },
+  "2102": {
+   "w": 61,
+   "h": 98,
+   "id": 2102,
+   "file": "2102.png"
+  },
+  "2103": {
+   "w": 61,
+   "h": 98,
+   "id": 2103,
+   "file": "2103.png"
+  },
+  "2104": {
+   "w": 61,
+   "h": 98,
+   "id": 2104,
+   "file": "2104.png"
+  },
+  "2105": {
+   "w": 63,
+   "h": 113,
+   "id": 2105,
+   "file": "2105.png"
+  },
+  "2106": {
+   "w": 63,
+   "h": 113,
+   "id": 2106,
+   "file": "2106.png"
+  },
+  "2107": {
+   "w": 62,
+   "h": 113,
+   "id": 2107,
+   "file": "2107.png"
+  }
+ },
+ "text": [
+  "istribute",
+  "ot Distribute",
+  "Om Appliances",
+  "OM  APPLIANCES (tm)\r\n\r\nDo the appliances in your home exist when unplugged from the space-time grid?  Are Platinum and Toast just thin, washable enamel coatings keeping us from seeing the Essential Transcendent Beingness of the so-called \"universe\"?\r\n\r\nThis meditation on the deep Connections between Existence and Convenience was submitted to the 1992 After Dark Contest by Greory M. Becker. The original Mac version was rewritten by Andy Karn, with art by Igor Gasowski and Tomoya Ikeda. This \r\nsentence is false.\r\n\r\nWindows version by:\r\nPaul Sasse\r\nSAPIEN Technologies, Inc.\r\nRichmond, CA\r\n"
+ ]
+}

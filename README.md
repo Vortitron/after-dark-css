@@ -91,13 +91,25 @@ The decoded ones are also custom elements, so if you are hosting the files yours
 | Element | Script | Options |
 | --- | --- | --- |
 | `<after-dark-toasters>` | `modules/toasters.js` | `objects` = squadron / air wing / swarm |
+| `<after-dark-toilets>` | `modules/toilets.js` | `crowd` = few / more / lots more / not pretty / phew!, `paper` = white / pastel / cow print / random, `occupant` = nobody / dumpin' dan / bessie / aaron / random |
 | `<after-dark-marbles>` | `modules/marbles.js` | `pins` = none / few / many / lots, `pin-size` = x-small / medium / big, `speed` = slow / medium / fast |
 | `<after-dark-marbles-tilt>` | `modules/marbles-tilt.js` | same options as marbles; gravity follows DeviceOrientation (tap to enable on iOS), and where there is no sensor the bungee cow hangs from a peg at the top as a plumb bob you can drag or steer with the arrow keys. Turning the phone over keeps the pile and the pins. When it fills up the walls give way, the marbles pour off the downhill edge and the pins go up as fireworks. Embed with `allow="accelerometer; gyroscope"` on the iframe |
 | `<after-dark-flocks>` | `modules/flocks.js` | `kind` = birds / polliwogs / gnats / paparazzi / atoms / copters / dots, `size` = small / medium / large |
+| `<after-dark-rebound>` | `modules/rebound.js` | `ball-type` = plastic / metal / both, `balls` = not many / more / lots more / bunches / oodles, `wobbly` and `clear-screen` are flags |
+| `<after-dark-bogglins>` | `modules/bogglins.js` | `explosivity` = unstable / volatile / dangerous / evacuate!, `twanginess` = mild / rich / zesty / sharp |
+| `<after-dark-om>` | `modules/om.js` | `entities` = few / some / more / lots, `life-energy` = 1000 kwh / 2000 kwh / 3000 kwh / 4000 kwh / 5000 kwh, `defrost` = never / rarely / occasionally / often / very often / almost always / constantly, `washer-karma` = none / a little / some / average / lots / complete |
+| `<after-dark-gravity>` | `modules/gravity.js` | `balls` = 1–7, `size` = small / medium / large, `colors` and `clear-screen` are flags. No artwork: the original draws itself |
+| `<after-dark-snake>` | `modules/snake.js` | `speed` = slow / medium / fast, `maze-complexity` = simple / medium / twisty, `pause-when-done` = 0 sec / 1 sec / 3 sec / 5 sec / 10 sec / 15 sec / 30 sec / 1 min. No artwork |
+| `<after-dark-zot>` | `modules/zot.js` | `forkiness` = few / forky / max forky!, `kinkiness` = no kinks / kinky / deviant, `how-often` = rarely / sometimes / often / stormy!. No artwork |
+| `<after-dark-draino>` | `modules/draino.js` | `speed` = slow / medium / fast, `direction` = clockwise / inward / counter, `drops` and `show-drain` are flags. No artwork |
+| `<after-dark-shapes>` | `modules/shapes.js` | `color` and `clear-screen` are flags. No artwork |
+| `<after-dark-spheres>` | `modules/spheres.js` | `max-size` = 20 / 50 / 80 / 100, `offset` = 0 / 10 / 30 / 60, `clear-every` = 20 / 50 / 100 / 200, `clear-screen` is a flag. No artwork |
 | `<after-dark-aqua>` | `modules/aqua.js` | `creatures` and `seaweed` are counts, `sea-floor` is a flag |
 | `<after-dark-marbles-40>` | `modules/marbles-40.js` | `count` = a few / a pouch full / a jar full / a box full, `pattern` |
 | `<after-dark-fishpro>` | `modules/fishpro.js` | `fish` = solo / study group / class / school / university, `sea-floor` = none / static / animated, `select-fish` = a comma-separated list of species |
+| `<after-dark-fish-world>` | `modules/fish-world.js` | `select-fish` = a species name (or comma-separated list), `show-background` is a flag |
 | `<after-dark-bugs>` | `modules/bugs.js` | `density` = nest / colony / infestation / swarm / plague / new york, `type` = scarab / jewel / roaches / ants / ladybugs / flys / all, `clear-screen="no"` to let the page show through |
+| `<after-dark-rainforest>` | `modules/rainforest.js` | `number` = few / some / many / hordes, `type` = dragonfly / peruvian / lehman / beetle / butterfly / turtle / all, `background` = desktop / black / leaves / wet blue / moss / lichen / rock / mottled / soft green / random, `foliage` is a flag |
 | `<after-dark-cham>` | `modules/cham.js` | `quantity` = few / some / more / some more / lots, `zest` = laconic / perky / frisky / hyper, `vomiter` = none / upset tummy / nauseous / sick / poisoned / vomitorium |
 | `<after-dark-toxic>` | `modules/toxic.js` | `critters` = depopulated / lonely / fruitful / swarming / festering, `lung-capacity` = thimble / cup / quart / gallon / barrel, `fish-only` and `swamp-floor` are flags |
 | `<after-dark-phlegm>` | `modules/phlegm.js` | `behavior` = pesky / unruly / ill-mannered / horrid / atrocious / kill it!!!, `mess` = unkempt / besmirched / disquieting / nauseous / disgusting / art form / are you crazy?!, `clear-screen="no"` to let the page show through |
@@ -111,6 +123,7 @@ Every option also works as a query string, so a saver page is linkable with its 
 ```
 all/marbles.html?pins=lots&pin-size=big&speed=fast
 all/bungee.html?jumper=cow&equipment=purfikt&jumps=droves
+all/zot.html?forkiness=max%20forky!&how-often=stormy!
 ```
 
 The front page has a **Settings…** button that puts each module's own control panel back — the same options, in the module's own words — and applies them to the preview. **Embed…** then writes out the snippet with whatever is selected.

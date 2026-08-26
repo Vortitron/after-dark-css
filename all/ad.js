@@ -199,13 +199,18 @@
       if (!r.ok) { throw new Error('no manifest at ' + base); }
       return r.json();
     }).then(function (manifest) {
-      var parts = manifest.sequences || manifest.bitmaps || {};
-      var ids = Object.keys(parts);
-      return Promise.all(ids.map(function (id) {
-        return loadImage(base + '/' + (parts[id].file || id + '.png'));
-      })).then(function (loaded) {
-        var images = {};
-        ids.forEach(function (id, i) { images[id] = loaded[i]; });
+      var images = {};
+      var jobs = [];
+      function queue(parts) {
+        Object.keys(parts || {}).forEach(function (id) {
+          jobs.push(loadImage(base + '/' + (parts[id].file || id + '.png')).then(function (im) {
+            images[id] = im;
+          }));
+        });
+      }
+      queue(manifest.sequences);
+      queue(manifest.bitmaps);
+      return Promise.all(jobs).then(function () {
         return new Art(base, manifest, images);
       });
     });

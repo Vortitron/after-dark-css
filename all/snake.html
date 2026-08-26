@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Snake Screensaver | After Dark in the Browser</title>
+	<meta name="description" content="After Dark's Snake screensaver, running in the browser: a maze generated and solved, reconstructed from SNAKE.AD which draws itself in code.">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="shortcut icon" href="../img/favicon.png?v=bc21638-260826172024">
+	<link rel="stylesheet" href="base.css?v=bc21638-260826172024">
+	<style>
+		html, body { height: 100%; }
+		body { background: #000; margin: 0; overflow: hidden; }
+		after-dark-snake { position: absolute; inset: 0; display: block; }
+	</style>
+</head>
+<body>
+	<h1 class="visuallyhidden">Snake Screensaver - After Dark in the Browser</h1>
+
+	<after-dark-snake speed="medium" maze-complexity="medium" pause-when-done="5 sec"></after-dark-snake>
+
+	<script src="ad.js?v=bc21638-260826172024"></script>
+	<script src="modules/snake.js?v=bc21638-260826172024"></script>
+</body>
+</html>
